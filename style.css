@@ -116,6 +116,84 @@ body {
 }
 
 /* ============================================================
+   Search
+   ============================================================ */
+.search-container {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.search-input:focus {
+  border-color: var(--accent);
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.search-results {
+  list-style: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 0 0 6px 6px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.search-result-item a {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+
+.search-result-item:last-child a {
+  border-bottom: none;
+}
+
+.search-result-item a:hover {
+  background: var(--bg-card);
+}
+
+.result-title {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.2rem;
+}
+
+.result-snippet {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================================
    Main Content
    ============================================================ */
 #main {
@@ -500,6 +578,17 @@ body {
     padding: 1rem;
     max-width: 100%;
     overflow-x: hidden;
+  }
+
+  .search-container {
+    margin-bottom: 0.5rem;
+  }
+
+  .search-results {
+    position: fixed;
+    left: 1rem;
+    right: 1rem;
+    top: auto;
   }
 
   /* Kanban: stack columns vertically on mobile */

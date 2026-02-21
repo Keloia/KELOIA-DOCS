@@ -9,11 +9,11 @@ Requirements for MCP server milestone. Each maps to roadmap phases.
 
 ### MCP Foundation
 
-- [ ] **MCP-01**: MCP server skeleton in `mcp-server/` with `@modelcontextprotocol/sdk`, `zod@^3.25.0`, TypeScript, `Node16` module resolution
-- [ ] **MCP-02**: Stdio transport via `StdioServerTransport` — zero `console.log()`, only `console.error()`
-- [ ] **MCP-03**: All file paths resolved from `import.meta.url`, never `process.cwd()`
+- [x] **MCP-01**: MCP server skeleton in `mcp-server/` with `@modelcontextprotocol/sdk`, `zod@^3.25.0`, TypeScript, `Node16` module resolution
+- [x] **MCP-02**: Stdio transport via `StdioServerTransport` — zero `console.log()`, only `console.error()`
+- [x] **MCP-03**: All file paths resolved from `import.meta.url`, never `process.cwd()`
 - [ ] **MCP-04**: `.mcp.json` at repo root for Claude Code project-scope registration
-- [ ] **MCP-05**: Code structured so transport layer is swappable for future HTTP/SSE
+- [x] **MCP-05**: Code structured so transport layer is swappable for future HTTP/SSE
 
 ### Read Tools
 
@@ -79,11 +79,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MCP-01 | Phase 3 | Pending |
-| MCP-02 | Phase 3 | Pending |
-| MCP-03 | Phase 3 | Pending |
+| MCP-01 | Phase 3 | Complete |
+| MCP-02 | Phase 3 | Complete |
+| MCP-03 | Phase 3 | Complete |
 | MCP-04 | Phase 3 | Pending |
-| MCP-05 | Phase 3 | Pending |
+| MCP-05 | Phase 3 | Complete |
 | READ-01 | Phase 4 | Pending |
 | READ-02 | Phase 4 | Pending |
 | READ-03 | Phase 4 | Pending |

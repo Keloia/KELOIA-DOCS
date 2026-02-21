@@ -34,6 +34,7 @@ Progress: [██████████] 100% (3/3 v1.1 phases complete)
 | 05-write-tools | 2 | ~5 min | ~2.5 min |
 
 *Updated after each plan completion*
+| Phase 05-write-tools P01 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -52,6 +53,9 @@ Progress: [██████████] 100% (3/3 v1.1 phases complete)
 - Pretty-printed JSON (null, 2) in all tool responses — readability aids Claude debugging
 - slug allowlist via index.json prevents path traversal in keloia_read_doc
 - README at repo root (not mcp-server/README.md) — covers both static site and MCP server, matches GitHub default display location
+- [Phase 05-write-tools]: Write task file first, then update index — ensures index only references files that exist
+- [Phase 05-write-tools]: atomicWriteJson uses writeFileSync + renameSync pattern — no partial reads possible under concurrent access
+- [Phase 05-write-tools]: notes field uses z.string().nullable().optional() — allows null as distinct valid value vs omission
 
 ### Pending Todos
 

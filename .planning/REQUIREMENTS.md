@@ -25,10 +25,10 @@ Requirements for MCP server milestone. Each maps to roadmap phases.
 
 ### Write Tools
 
-- [ ] **WRITE-01**: `keloia_add_task` creates a new kanban task with Zod-validated input and atomic write
-- [ ] **WRITE-02**: `keloia_move_task` moves a task between columns with column validation and atomic write
-- [ ] **WRITE-03**: `keloia_update_progress` updates milestone fields with Zod-validated input and atomic write
-- [ ] **WRITE-04**: All write tools use atomic writes (same-directory temp file + `renameSync`)
+- [x] **WRITE-01**: `keloia_add_task` creates a new kanban task with Zod-validated input and atomic write
+- [x] **WRITE-02**: `keloia_move_task` moves a task between columns with column validation and atomic write
+- [x] **WRITE-03**: `keloia_update_progress` updates milestone fields with Zod-validated input and atomic write
+- [x] **WRITE-04**: All write tools use atomic writes (same-directory temp file + `renameSync`)
 
 ### Integration
 
@@ -91,10 +91,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | READ-05 | Phase 4 | Complete |
 | INTG-01 | Phase 4 | Complete |
 | INTG-02 | Phase 4 | Complete |
-| WRITE-01 | Phase 5 | Pending |
-| WRITE-02 | Phase 5 | Pending |
-| WRITE-03 | Phase 5 | Pending |
-| WRITE-04 | Phase 5 | Pending |
+| WRITE-01 | Phase 5 | Complete |
+| WRITE-02 | Phase 5 | Complete |
+| WRITE-03 | Phase 5 | Complete |
+| WRITE-04 | Phase 5 | Complete |
 | INTG-03 | Phase 5 | Complete |
 
 **Coverage:**

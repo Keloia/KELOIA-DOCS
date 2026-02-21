@@ -1,487 +1,497 @@
 # Architecture Research
 
-**Domain:** MCP server integration with existing filesystem data layer
+**Domain:** Static SPA + MCP Server — v2.0 feature integration (Search, Auth, CRUD, Kanban DnD)
 **Researched:** 2026-02-22
-**Confidence:** HIGH (official MCP TypeScript SDK docs verified, data layer schemas confirmed from live files)
+**Confidence:** HIGH (GitHub REST API CORS confirmed from official docs; OAuth proxy pattern confirmed from working implementation; HTML5 DnD from MDN; MiniSearch CDN availability confirmed)
 
 ## Standard Architecture
 
-### System Overview
+### System Overview (v2.0 State)
 
 ```
-┌───────────────────────────────────────────────────────────────────┐
-│                     Single Repo (keloia-docs)                      │
-├───────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  ┌──────────────────────┐   ┌──────────────────────────────────┐   │
-│  │   Static Site (SPA)  │   │     MCP Server (stdio)           │   │
-│  │   index.html         │   │     mcp-server/src/index.ts      │   │
-│  │   app.js             │   │                                  │   │
-│  │   style.css          │   │   McpServer + StdioTransport     │   │
-│  │                      │   │   Tools: read + write            │   │
-│  │   fetch() at runtime │   │   Zod validation on writes       │   │
-│  └──────────┬───────────┘   └──────────────┬─────────────────-─┘   │
-│             │                               │                       │
-│             │ reads via                     │ reads/writes          │
-│             │ HTTP (GH Pages)               │ Node.js fs module     │
-│             ↓                               ↓                       │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │                  Shared Data Layer (data/)                   │   │
-│  │                                                              │   │
-│  │  data/docs/          data/kanban/        data/progress/      │   │
-│  │  index.json          index.json          index.json          │   │
-│  │  *.md files          task-NNN.json       milestone-NN.json   │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
-├───────────────────────────────────────────────────────────────────┤
-│                    GitHub (hosting + storage)                       │
-│   GitHub Pages (serves repo root as static HTTP)                   │
-│   GitHub Actions (deploys on push to main, no build step)         │
-└───────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       Browser (GitHub Pages SPA)                         │
+│                                                                           │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐  │
+│  │  Search UI   │  │  Doc CRUD UI │  │  Kanban DnD  │  │   Auth UI   │  │
+│  │  (sidebar    │  │  (edit/add/  │  │  (drag cards │  │  (login btn │  │
+│  │  search box  │  │   delete via │  │  + confirm   │  │  + badge,   │  │
+│  │  + results)  │  │   textarea)  │  │  modal)      │  │  logout)    │  │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘  └──────┬──────┘  │
+│         │                 │                  │                 │          │
+│  ┌──────▼─────────────────▼──────────────────▼─────────────────▼──────┐  │
+│  │                     app.js (SPA router + view dispatch)              │  │
+│  ├────────────────────────────────────────────────────────────────────┤  │
+│  │  search.js     │  github-api.js  │  kanban-dnd.js  │  auth.js       │  │
+│  │  (MiniSearch   │  (Contents API  │  (dragstart/    │  (popup OAuth, │  │
+│  │   index build) │   wrapper)      │   drop/confirm) │   localStorage)│  │
+│  └────────────────────────────────────────────────────────────────────┘  │
+│         │ fetch                     │ fetch + token                       │
+│         │ data/ (static files)      │ api.github.com                      │
+└─────────┼─────────────────────────-─┼─────────────────────────────────────┘
+          │                           │
+          ▼                           ▼
+┌──────────────────┐     ┌─────────────────────────────────────────────────┐
+│  data/ (in repo) │     │  GitHub REST API (api.github.com)                │
+│  docs/*.md       │     │  CORS: Access-Control-Allow-Origin: *            │
+│  kanban/*.json   │     │  GET  /repos/OWNER/REPO/contents/PATH            │
+│  progress/*.json │     │  PUT  /repos/OWNER/REPO/contents/PATH            │
+└──────────────────┘     │  DELETE /repos/OWNER/REPO/contents/PATH          │
+                         └─────────────────────────────────────────────────┘
+                                              ▲
+                                              │ token in Authorization header
+┌─────────────────────────────────────────────┴─────────────────────────────┐
+│  Cloudflare Worker — oauth-proxy (~30 lines)                               │
+│  POST /token: receives OAuth code, holds client_secret, exchanges with     │
+│  github.com/login/oauth/access_token, returns HTML that writes token to    │
+│  localStorage and closes the popup window                                  │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  MCP Server (stdio, local — unchanged transport)                             │
+│  mcp-server/src/tools/read.ts   — ADD keloia_search_docs                    │
+│  mcp-server/src/tools/write.ts  — ADD keloia_add_doc, keloia_edit_doc,      │
+│                                       keloia_delete_doc                      │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Component Responsibilities
 
-| Component | Responsibility | Typical Implementation |
-|-----------|----------------|------------------------|
-| `data/docs/index.json` | Registry of all docs (slug + title pairs) | `{ schemaVersion: 1, docs: [{slug, title}] }` |
-| `data/docs/*.md` | Authoritative doc content | Plain markdown, hand-edited or MCP-written |
-| `data/kanban/index.json` | Registry of columns + task IDs | `{ schemaVersion: 1, columns: [...], tasks: ["task-001", ...] }` |
-| `data/kanban/task-NNN.json` | Individual task entity | `{ id, title, column, description, assignee }` |
-| `data/progress/index.json` | Registry of milestone IDs | `{ schemaVersion: 1, milestones: ["milestone-01", ...] }` |
-| `data/progress/milestone-NN.json` | Individual milestone entity | `{ id, phase, title, status, tasksTotal, tasksCompleted, notes }` |
-| `index.html` / `app.js` / `style.css` | Static SPA shell, runtime renderer | Vanilla HTML/CSS/JS, hash routing, marked.js from CDN |
-| `mcp-server/src/index.ts` | MCP server entry — server init, transport, all tool registrations | TypeScript + MCP SDK, compiled to `mcp-server/dist/` |
+| Component | Responsibility | v2.0 Status |
+|-----------|----------------|-------------|
+| `app.js` (router) | Hash routing, view dispatch, nav highlighting | Existing — add `#/search` route case, load new scripts |
+| `index.html` | SPA shell, script loading | Existing — add search input to sidebar, login button, new `<script>` tags |
+| `style.css` | Dark theme, responsive layout | Existing — add search results, edit UI overlay, drag-over highlight, auth badge styles |
+| `search.js` (new) | Build MiniSearch index from all fetched docs, render results with snippets | New file |
+| `auth.js` (new) | GitHub OAuth popup flow, localStorage token management, login/logout state, auth guard | New file |
+| `github-api.js` (new) | Wrap GitHub Contents API (GET sha, PUT content, DELETE) with Base64 encoding and serialized writes | New file |
+| `kanban-dnd.js` (new) | HTML5 dragstart/dragover/drop wiring on kanban cards and column targets, confirmation modal, auth-gated | New file (or inline in renderKanban refactor) |
+| Cloudflare Worker (new) | Hold client_secret, exchange OAuth code for token, write token to popup localStorage | New — single function, ~30 LOC |
+| `tools/read.ts` (modify) | Add `keloia_search_docs` — regex/string match over all doc markdown files | Modify existing |
+| `tools/write.ts` (modify) | Add `keloia_add_doc`, `keloia_edit_doc`, `keloia_delete_doc` — filesystem write using existing atomic helpers | Modify existing |
+| `data/docs/` | Markdown files — single source of truth for doc content | Existing — no schema change; add `mcp-setup.md` |
 
 ## Recommended Project Structure
 
 ```
-keloia-docs/                       # Repo root = GitHub Pages root
-├── index.html                     # SPA shell (existing)
-├── app.js                         # SPA router + renderers (existing)
-├── style.css                      # Styles (existing)
-├── data/                          # Single source of truth (existing)
-│   ├── docs/
-│   │   ├── index.json             # { schemaVersion, docs: [{slug, title}] }
-│   │   └── *.md                   # Doc content files
-│   ├── kanban/
-│   │   ├── index.json             # { schemaVersion, columns, tasks: [ids] }
-│   │   └── task-NNN.json          # Per-task entity files
-│   └── progress/
-│       ├── index.json             # { schemaVersion, milestones: [ids] }
-│       └── milestone-NN.json      # Per-milestone entity files
-├── mcp-server/                    # NEW: MCP server (isolated, TypeScript)
-│   ├── src/
-│   │   └── index.ts               # Server init + all tool registrations (~200 lines)
-│   ├── dist/                      # Compiled output (gitignored or committed)
-│   │   └── index.js               # Entry point Claude Code spawns
-│   ├── package.json               # { "type": "module", scripts.build: "tsc" }
-│   └── tsconfig.json              # target: ES2022, module: Node16, outDir: dist
-├── .mcp.json                      # NEW: Claude Code project-scope MCP config
-├── .github/
-│   └── workflows/
-│       └── deploy.yml             # GitHub Actions (existing, no change needed)
-└── .planning/                     # GSD planning files (existing)
-    └── ...
+keloia-docs/
+├── index.html              # MODIFY: add sidebar search input, login button, new <script> tags
+├── app.js                  # MODIFY: add #/search route, call renderSearch(), guard write UI on isAuthenticated()
+├── style.css               # MODIFY: search results, edit textarea overlay, drag-over column highlight, auth badge
+├── search.js               # NEW: MiniSearch index builder + search render + snippet extraction
+├── auth.js                 # NEW: OAuth popup, localStorage token, isAuthenticated(), getToken(), logout()
+├── github-api.js           # NEW: getFileSha(), createDoc(), updateDoc(), deleteDoc(), updateJsonFile()
+├── kanban-dnd.js           # NEW: dragstart/dragover/drop handlers + confirmation modal (or inline in app.js)
+├── data/
+│   └── docs/
+│       ├── index.json      # MODIFY: add { slug: "mcp-setup", title: "MCP Setup Guide" } entry
+│       └── mcp-setup.md    # NEW: static markdown doc (Cursor, Claude Code, Windsurf setup)
+├── mcp-server/
+│   └── src/
+│       └── tools/
+│           ├── read.ts     # MODIFY: add keloia_search_docs tool registration
+│           └── write.ts    # MODIFY: add keloia_add_doc, keloia_edit_doc, keloia_delete_doc tool registrations
+└── cloudflare-worker/
+    └── oauth-proxy.js      # NEW: Cloudflare Worker — OAuth code exchange proxy
 ```
 
 ### Structure Rationale
 
-- **`data/` at repo root:** Existing constraint — GitHub Pages serves the repo root, so `data/` is reachable at `data/docs/index.json` by both the SPA's `fetch()` and the MCP server's `fs` module without any path gymnastics. Do not move this.
-- **`mcp-server/` as isolated subdirectory:** Keeps TypeScript toolchain (`node_modules/`, `tsconfig.json`, `package.json`) completely separate from the site. The site has zero dependencies; the server's `npm install` does not affect the site.
-- **`mcp-server/src/index.ts` as single file:** 7-8 tools, each under 25 lines. A single file is readable in one pass. Split into `src/tools/` only if the file exceeds ~300 lines.
-- **`mcp-server/dist/` as output (not `build/`):** The milestone context specifies `dist/` as the compiled output directory. Use this consistently in `tsconfig.json`, `package.json` scripts, and `.mcp.json`.
-- **`.mcp.json` at repo root:** Claude Code looks for `.mcp.json` in the project root for project-scoped MCP registration. This is the correct location.
+- **Separate JS files (search.js, auth.js, github-api.js, kanban-dnd.js):** The zero-build constraint means no bundler, no ES module imports. Each concern is a separate `<script>` tag loaded in dependency order in `index.html`. Functions are globally scoped. Keeps `app.js` as a thin dispatcher rather than a 600-line monolith.
+- **Script loading order in index.html:** `auth.js` first (no deps), then `github-api.js` (needs `getToken()` from auth.js), then `search.js` (no auth dep but loads after others), then `kanban-dnd.js` (needs `github-api.js`), then `app.js` last (calls everything).
+- **cloudflare-worker/ at repo root:** Keeps the proxy code auditable and version-controlled. Deployed separately via `wrangler deploy` — NOT served by GitHub Pages (no .html extension, no route in the SPA).
+- **No new data directory structure:** Doc CRUD via GitHub Contents API operates on the same `data/docs/*.md` and `data/docs/index.json` files. Zero schema migration.
 
 ## Architectural Patterns
 
-### Pattern 1: Path Resolution via import.meta.url
+### Pattern 1: OAuth Popup + localStorage Poll (Auth Flow)
 
-**What:** In an ESM TypeScript server (`"type": "module"` in package.json), `__dirname` does not exist. Use `import.meta.url` to derive the filesystem path of the compiled entry point, then navigate to the repo root.
+**What:** The SPA opens the Cloudflare Worker URL in a popup window. The Worker handles the GitHub OAuth redirect, exchanges the authorization code for an access token server-side (where the `client_secret` is safe as an environment variable), then returns an HTML page whose `<script>` writes `localStorage.setItem('github_token', token)` and calls `window.close()`. The SPA polls `localStorage` on a 1-second interval until the token appears, then stops polling and updates the UI.
 
-**When to use:** Every time the server needs to construct an absolute path to a data file. This is the only correct approach for ESM modules.
+**When to use:** Any static site (GitHub Pages, Netlify, etc.) that needs GitHub write access without a persistent backend. The `github.com/login/oauth/access_token` endpoint does not support CORS — it cannot be called from the browser directly. The Cloudflare Worker is the minimal viable proxy.
 
-**Trade-offs:** Two extra lines at the top of the file. No downside for this project. The alternative (`process.cwd()`) depends on which directory the process was spawned from, which is fragile.
+**Trade-offs:** Token lives in `localStorage` (XSS-readable — acceptable for a single-developer tool accessing a non-sensitive repo). No refresh token — user re-authenticates on token expiry. The 30-line Worker is the only server-side component in the entire system.
 
 **Example:**
-```typescript
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+```javascript
+// auth.js
+let _token = localStorage.getItem('github_token') || null;
 
-// __dirname equivalent for ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+function isAuthenticated() { return !!_token; }
+function getToken() { return _token; }
 
-// mcp-server/dist/index.js → navigate up two levels to repo root
-const REPO_ROOT = join(__dirname, "..", "..");
-
-// Derived data paths — derive once, use everywhere
-const DOCS_DIR      = join(REPO_ROOT, "data", "docs");
-const KANBAN_DIR    = join(REPO_ROOT, "data", "kanban");
-const PROGRESS_DIR  = join(REPO_ROOT, "data", "progress");
-```
-
-Note: Node.js 20.11+ supports `import.meta.dirname` directly, eliminating the fileURLToPath step. Using the fileURLToPath approach works on all Node versions and is safer as a default.
-
-### Pattern 2: Split-File Read Pattern (index + entity files)
-
-**What:** The existing data layer uses a split-file pattern. Reading a domain requires two steps: (1) read the index to get the list of entity IDs, (2) read each entity file. The MCP server mirrors this exactly — never reconstruct a flat list by scanning the directory.
-
-**When to use:** All kanban and progress read operations. The index is the authoritative registry; scanning the directory for `task-*.json` files bypasses schema versioning and ordering.
-
-**Trade-offs:** Two filesystem reads per domain fetch instead of one. At 4-20 files, this is imperceptible. The split-file pattern was chosen for the data layer for good reasons (atomic updates, no unbounded growth); the MCP server should honor the same contract.
-
-**Example (reading all kanban tasks):**
-```typescript
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-
-function getAllTasks(): Task[] {
-  const index = JSON.parse(
-    readFileSync(join(KANBAN_DIR, "index.json"), "utf-8")
-  ) as KanbanIndex;
-
-  return index.tasks.map(id =>
-    JSON.parse(readFileSync(join(KANBAN_DIR, `${id}.json`), "utf-8")) as Task
+function login() {
+  const state = crypto.randomUUID();
+  sessionStorage.setItem('oauth_state', state);
+  const popup = window.open(
+    `https://YOUR_WORKER.workers.dev/oauth/start?state=${state}`,
+    'github-oauth',
+    'width=600,height=700'
   );
+  const poll = setInterval(() => {
+    const token = localStorage.getItem('github_token');
+    if (token) {
+      clearInterval(poll);
+      _token = token;
+      popup.close();
+      onAuthSuccess();
+    }
+  }, 1000);
+}
+
+function logout() {
+  localStorage.removeItem('github_token');
+  _token = null;
+  onAuthChange();
 }
 ```
 
-### Pattern 3: Atomic Write via Temp File + Rename
+### Pattern 2: GitHub Contents API Write (Fetch-First SHA)
 
-**What:** For write tools (`add_task`, `move_task`, `update_progress`), never write directly to the target JSON file. Write to a `.tmp` file first, then use `fs.renameSync()` to atomically replace the original. If the write fails mid-way, the original file is untouched.
+**What:** All writes to `data/` files in the GitHub repo use the GitHub Contents API at `api.github.com`. GitHub's REST API sends `Access-Control-Allow-Origin: *` on all responses — direct browser `fetch()` is supported. However, updating or deleting a file requires the current blob SHA from a preceding GET. The write sequence is always: GET file metadata (extract `sha`), then PUT or DELETE with that `sha`.
 
-**When to use:** Every write to `data/`. On a local filesystem, `renameSync` is atomic. On NTFS/ext4/APFS, a partial write followed by crash leaves the `.tmp` file, not a corrupt JSON file.
+**When to use:** Every doc CRUD operation and every kanban task column update that the site persists to the repository. This is the only write path available on a static GitHub Pages site.
 
-**Trade-offs:** One extra file operation per write. No meaningful downside. The alternative (`writeFileSync` directly) leaves a window where the file is half-written if the process is killed.
-
-**Example (adding a task):**
-```typescript
-import { readFileSync, writeFileSync, renameSync } from "node:fs";
-import { join } from "node:path";
-import { randomUUID } from "node:crypto";
-
-function addTask(input: { title: string; column: string; description?: string; assignee?: string }) {
-  // 1. Read index
-  const indexPath = join(KANBAN_DIR, "index.json");
-  const index = JSON.parse(readFileSync(indexPath, "utf-8")) as KanbanIndex;
-
-  // 2. Generate new task ID (next sequential number)
-  const nextNum = String(index.tasks.length + 1).padStart(3, "0");
-  const taskId = `task-${nextNum}`;
-
-  // 3. Build task object
-  const task: Task = {
-    id: taskId,
-    title: input.title,
-    column: input.column,
-    description: input.description ?? null,
-    assignee: input.assignee ?? null,
-  };
-
-  // 4. Write task file atomically
-  const taskPath = join(KANBAN_DIR, `${taskId}.json`);
-  const taskTmp  = taskPath + ".tmp";
-  writeFileSync(taskTmp, JSON.stringify(task, null, 2), "utf-8");
-  renameSync(taskTmp, taskPath);
-
-  // 5. Update index atomically
-  index.tasks.push(taskId);
-  const indexTmp = indexPath + ".tmp";
-  writeFileSync(indexTmp, JSON.stringify(index, null, 2), "utf-8");
-  renameSync(indexTmp, indexPath);
-
-  return task;
-}
-```
-
-### Pattern 4: Zod Validation Before Write
-
-**What:** All write tool inputs are validated with a Zod schema before any filesystem operation. `server.registerTool()` (or `server.tool()`) accepts a Zod input schema — use it. Reject invalid inputs with a descriptive error message returned as MCP content, not a thrown exception.
-
-**When to use:** Every write tool. Reading does not require Zod (schemas are for user/AI input validation, not file content validation).
-
-**Trade-offs:** 5-10 extra lines per tool for schema definition. Worth it — prevents corrupt JSON from being written to disk and provides Claude with clear error messages when arguments are wrong.
+**Trade-offs:** Each write is 2 network round-trips (GET sha + PUT/DELETE). Operations must be serialized — GitHub explicitly states that concurrent writes to the same repo conflict. Write latency is ~500ms–2s on good connections. The change triggers a GitHub Actions deploy; the live site reflects the change after ~30 seconds (acceptable for this use case).
 
 **Example:**
-```typescript
-import { z } from "zod";
+```javascript
+// github-api.js
+const REPO_API = 'https://api.github.com/repos/OWNER/REPO/contents';
 
-const AddTaskInput = z.object({
-  title:       z.string().min(1).max(200),
-  column:      z.enum(["Backlog", "In Progress", "Done"]),
-  description: z.string().max(1000).optional(),
-  assignee:    z.string().max(100).optional(),
-});
+async function updateDoc(path, markdownContent) {
+  const token = getToken(); // from auth.js
+  const url = `${REPO_API}/${path}`;
 
-server.tool(
-  "add_task",
-  "Create a new kanban task in the specified column.",
-  AddTaskInput.shape,          // MCP SDK accepts zod shape
-  async (input) => {
-    const parsed = AddTaskInput.safeParse(input);
-    if (!parsed.success) {
-      return {
-        content: [{ type: "text", text: `Invalid input: ${parsed.error.message}` }],
-        isError: true,
-      };
-    }
-    const task = addTask(parsed.data);
-    return {
-      content: [{ type: "text", text: `Task created: ${task.id} — ${task.title}` }],
-    };
-  }
-);
+  // Step 1: GET current SHA
+  const meta = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+  }).then(r => r.json());
+
+  // Step 2: PUT updated content
+  // btoa() with encodeURIComponent handles non-ASCII characters (UTF-8 safe Base64)
+  const encoded = btoa(unescape(encodeURIComponent(markdownContent)));
+  await fetch(url, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/vnd.github+json'
+    },
+    body: JSON.stringify({
+      message: `docs: update ${path}`,
+      content: encoded,
+      sha: meta.sha
+    })
+  });
+}
 ```
+
+### Pattern 3: Client-Side Full-Text Search with MiniSearch (CDN)
+
+**What:** On first search interaction (lazy-load on demand, not on page load), fetch all doc markdown files listed in `data/docs/index.json`, build an in-memory MiniSearch index. MiniSearch 7.2.0 is available as a UMD build via jsDelivr CDN. Search is instant after index build — no subsequent network calls. Results include slug, title, and a surrounding text snippet.
+
+**When to use:** Static sites with <200 documents where a one-time index build is acceptable. For the current doc set (2–20 files), total index build time is under 200ms.
+
+**Trade-offs:** Index rebuilds on every page load (no persistent cache). MiniSearch ~22KB gzipped. For the current doc scale, this is the correct approach — no build step for a pre-built index file, no server needed.
+
+**Example:**
+```javascript
+// search.js — loads after MiniSearch UMD from CDN
+let _searchIndex = null;
+
+async function getOrBuildIndex() {
+  if (_searchIndex) return _searchIndex;
+  const { docs } = await fetch('data/docs/index.json').then(r => r.json());
+  const entries = await Promise.all(
+    docs.map(async ({ slug, title }) => {
+      const text = await fetch(`data/docs/${slug}.md`).then(r => r.text());
+      return { id: slug, title, text };
+    })
+  );
+  _searchIndex = new MiniSearch({
+    fields: ['title', 'text'],
+    storeFields: ['title'],
+    searchOptions: { prefix: true, fuzzy: 0.2 }
+  });
+  _searchIndex.addAll(entries);
+  return _searchIndex;
+}
+
+async function renderSearch(query) {
+  const idx = await getOrBuildIndex();
+  const results = idx.search(query);
+  // render results with title + snippet
+}
+```
+
+### Pattern 4: HTML5 Drag and Drop for Kanban (Auth-Gated)
+
+**What:** Add `draggable="true"` to rendered kanban card elements. Attach `dragstart` to cards (store `taskId` via `dataTransfer.setData('text/plain', taskId)`). Column containers get `dragover` (call `event.preventDefault()` to enable drop) and `drop` handlers that extract `taskId` from `dataTransfer`, show a confirmation modal ("Move [task title] to [column]?"), and on confirmation call `github-api.updateTaskFile()`. Drag attributes and event listeners are only wired when `isAuthenticated()` is true.
+
+**When to use:** Any vanilla JS kanban where touch support is not required. The HTML5 DnD API is built into every modern browser with no dependencies. Touch support (mobile) is not a requirement for this single-developer desktop-first tool.
+
+**Trade-offs:** HTML5 DnD API has known rough edges (no touch events, limited drag image customization). Acceptable for this use case. The confirmation modal prevents accidental moves from triggering API calls.
 
 ## Data Flow
 
-### Read Flow: list_docs
+### Search Flow (new)
 
 ```
-Claude calls: list_docs {}
-    ↓
-readFileSync(DOCS_DIR/index.json)
-    ↓
-Parse JSON → extract docs array [{slug, title}, ...]
-    ↓
-Return: content[{ type: "text", text: "architecture — Architecture\nvalue-proposition — Value Proposition" }]
+User types in sidebar search box
+    → debounce 300ms
+    → getOrBuildIndex()
+        → IF index cached: skip fetch
+        → ELSE: fetch data/docs/index.json → fan-out fetch all *.md files → build MiniSearch index
+    → idx.search(query)
+    → render result list: [{ slug, title, snippet }]
+    → user clicks result → window.location.hash = '#/docs/slug'
 ```
 
-### Read Flow: read_doc
+### Auth Flow (new)
 
 ```
-Claude calls: read_doc { slug: "architecture" }
-    ↓
-Validate: slug must match /^[a-z0-9-]+$/ (no path traversal)
-    ↓
-readFileSync(DOCS_DIR/{slug}.md)
-    ↓
-Return: content[{ type: "text", text: "# Architecture\n..." }]
+User clicks Login button
+    → window.open(cloudflare_worker_url + '?state=' + state, popup)
+    → GitHub OAuth consent screen (user approves)
+    → GitHub redirects to Worker callback URL with code
+    → Worker POSTs code + client_secret to github.com/login/oauth/access_token
+    → Worker receives token, returns HTML page
+    → HTML page: localStorage.setItem('github_token', token) + window.close()
+    → SPA poll (setInterval 1s) detects token in localStorage
+    → _token set, poll cleared, onAuthSuccess() called
+    → Login button → username badge, logout option
+    → Write-gated UI elements (Edit, Add, Delete, drag handles) become visible
 ```
 
-### Read Flow: get_kanban
+### Doc CRUD Flow (new — site)
 
 ```
-Claude calls: get_kanban { column?: "In Progress" }
-    ↓
-readFileSync(KANBAN_DIR/index.json) → get columns + task IDs
-    ↓
-For each task ID: readFileSync(KANBAN_DIR/{id}.json)
-    ↓
-Apply column filter if provided
-    ↓
-Return: content[{ type: "text", text: JSON.stringify(tasks, null, 2) }]
+Edit doc:
+    User clicks Edit → mainEl shows <textarea> pre-filled with markdown + Save/Cancel
+    User edits, clicks Save
+    → github-api.updateDoc('data/docs/SLUG.md', newContent)
+        → GET sha, PUT content (2 round-trips)
+    → on success: navigate to #/docs/SLUG (re-renders from updated raw file ~30s post-deploy)
+
+Add doc:
+    User clicks + Add Doc → form with slug + title + textarea
+    → github-api.createDoc('data/docs/SLUG.md', content)
+        → PUT (no sha needed for new files)
+    → github-api.updateJsonFile('data/docs/index.json', addEntry)
+        → GET sha, PUT updated index JSON
+    → re-populate sidebar doc list from updated index
+
+Delete doc:
+    User clicks Delete → confirm dialog
+    → github-api.deleteDoc('data/docs/SLUG.md')
+        → GET sha, DELETE
+    → github-api.updateJsonFile('data/docs/index.json', removeEntry)
+    → navigate away, re-populate sidebar
 ```
 
-### Write Flow: add_task
+### Kanban Drag-and-Drop Flow (new — site)
 
 ```
-Claude calls: add_task { title: "...", column: "Backlog", description: "..." }
-    ↓
-Zod validates input
-    ↓
-Read KANBAN_DIR/index.json → compute next task ID
-    ↓
-Write task-NNN.json to .tmp, rename to task-NNN.json (atomic)
-    ↓
-Append task ID to index.tasks, write index.json to .tmp, rename (atomic)
-    ↓
-Return: content[{ type: "text", text: "Task created: task-005 — ..." }]
-    ↓
-Next site fetch sees task-005.json via index.tasks registry
+Authenticated user drags card to new column
+    → dragstart: dataTransfer.setData('text/plain', taskId)
+    → dragover on column: event.preventDefault()
+    → drop: extract taskId, identify target column
+    → show confirmation modal: "Move '[title]' to '[column]'?"
+    → user confirms
+    → github-api.updateTaskFile(taskId, targetColumn)
+        → GET data/kanban/TASK_ID.json sha, PUT updated task with new column
+    → on success: re-render kanban board
 ```
 
-### Write Flow: move_task
+### MCP Doc Search Flow (new — MCP server)
 
 ```
-Claude calls: move_task { taskId: "task-003", column: "Done" }
-    ↓
-Zod validates: taskId matches task-NNN pattern, column is valid
-    ↓
-Read KANBAN_DIR/{taskId}.json
-    ↓
-Mutate: task.column = newColumn
-    ↓
-Write updated task to .tmp, rename (atomic)
-    ↓
-Return: content[{ type: "text", text: "task-003 moved to Done" }]
+Claude calls: keloia_search_docs({ query: "authentication", options: { regex: false } })
+    → readFileSync(DOCS_DIR/index.json) → get all slugs
+    → for each slug: readFileSync(DOCS_DIR/slug.md)
+    → match query string (or regex) against title + content
+    → return array of { slug, title, snippet (100 chars around match) }
 ```
 
-### Key Data Flow Properties
+### MCP Doc Write Flow (new — MCP server)
 
-1. **Read isolation.** Site reads via HTTP (GitHub Pages). MCP server reads via `fs`. No shared process, no cache coherency issue, no locking needed for reads.
-2. **Write path is MCP-only.** The site is read-only. All mutations go through Zod-validated MCP tools.
-3. **Split-file atomicity.** Entity files (task-NNN.json, milestone-NN.json) are written atomically per entity. The index is updated last. A crash between entity write and index update leaves an orphaned file — harmless (not in registry = not visible). Recovery: re-run the write operation.
-4. **No network coupling between site and MCP server.** They communicate exclusively through shared filesystem files.
-5. **Eventual consistency is sufficient.** A task written via MCP is visible to the site on the next `fetch()` — which happens on navigation or page load. Zero polling needed.
+```
+Claude calls: keloia_add_doc({ slug: "deployment", title: "Deployment Guide", content: "# ..." })
+    → Zod validate: slug /^[a-z0-9-]+$/, title non-empty, content non-empty
+    → Check slug not already in index (prevent overwrite)
+    → writeFileSync(DOCS_DIR/slug.md, content) — no atomicWriteJson needed (new file, no sha conflict)
+    → Read docs index, push { slug, title }, atomicWriteJson(index) — existing helper
+    → Return: "Created docs/slug.md and updated index"
+
+Claude calls: keloia_edit_doc({ slug: "architecture", content: "# Updated..." })
+    → Zod validate: slug in index, content non-empty
+    → atomicWriteJson equivalent: write to .tmp, rename
+    → Return: "Updated docs/architecture.md"
+
+Claude calls: keloia_delete_doc({ slug: "old-doc" })
+    → Zod validate: slug in index
+    → unlinkSync(DOCS_DIR/slug.md)
+    → Remove slug from index.docs array, atomicWriteJson(index)
+    → Return: "Deleted docs/old-doc.md and updated index"
+```
 
 ## Integration Points
 
-### New Files Created by This Milestone
+### New vs. Modified Components
 
-| File | Purpose |
-|------|---------|
-| `mcp-server/package.json` | npm manifest: `"type": "module"`, build script, deps |
-| `mcp-server/tsconfig.json` | TypeScript config: ES2022, Node16, outDir: dist |
-| `mcp-server/src/index.ts` | Server entry: server init + all tool registrations |
-| `mcp-server/dist/index.js` | Compiled output (gitignored or committed) |
-| `.mcp.json` | Claude Code project-scope registration |
+| File | Action | What Changes |
+|------|--------|--------------|
+| `index.html` | MODIFY | Add `<input id="search-box">` in sidebar; add `<div id="auth-bar">` in sidebar header; add `<script>` tags for auth.js, github-api.js, search.js, kanban-dnd.js, MiniSearch CDN |
+| `app.js` | MODIFY | Add `#/search` route case; add Edit/Add/Delete buttons to renderDoc(); guard write UI with isAuthenticated(); refactor renderKanban() to support DnD wiring |
+| `style.css` | MODIFY | Search results dropdown styles; edit overlay/textarea styles; kanban drag-over column highlight; auth badge + login button styles; confirmation modal |
+| `search.js` | NEW | MiniSearch index builder, search executor, result renderer |
+| `auth.js` | NEW | OAuth popup, localStorage token, isAuthenticated(), getToken(), logout() |
+| `github-api.js` | NEW | getFileSha(), createDoc(), updateDoc(), deleteDoc(), updateJsonFile() |
+| `kanban-dnd.js` | NEW | DnD event wiring helpers, confirmation modal show/hide |
+| `mcp-server/src/tools/read.ts` | MODIFY | Add `keloia_search_docs` tool registration |
+| `mcp-server/src/tools/write.ts` | MODIFY | Add `keloia_add_doc`, `keloia_edit_doc`, `keloia_delete_doc` tool registrations |
+| `data/docs/index.json` | MODIFY | Add `{ slug: "mcp-setup", title: "MCP Setup Guide" }` entry |
+| `data/docs/mcp-setup.md` | NEW | Static markdown: setup instructions for Cursor, Claude Code, Windsurf |
+| `cloudflare-worker/oauth-proxy.js` | NEW | GitHub OAuth code-for-token exchange proxy |
 
-### Modified Files
+### External Services
 
-| File | Change |
-|------|--------|
-| None | The site (`index.html`, `app.js`, `style.css`) is not modified. The data layer (`data/`) is not modified. The MCP server is entirely additive. |
+| Service | Integration Pattern | Auth | CORS? | Notes |
+|---------|---------------------|------|-------|-------|
+| `api.github.com` (Contents API) | Direct browser `fetch()` with `Authorization: Bearer TOKEN` | OAuth token in header | YES — `Access-Control-Allow-Origin: *` confirmed | Rate limit: 5000 req/hr per authenticated user |
+| `github.com/login/oauth/*` | Via Cloudflare Worker ONLY — never direct from browser | client_id + client_secret | NO — OAuth endpoints do not support CORS | Worker holds client_secret as environment variable |
+| jsDelivr CDN | `<script src="...">` in index.html | None | N/A | `https://cdn.jsdelivr.net/npm/minisearch@7.2.0/dist/umd/index.min.js` |
+| Cloudflare Workers | Popup redirect target for OAuth flow | client_secret in env var | Worker sets CORS headers itself | Free tier: 100k req/day — sufficient |
 
-### Data Layer Integration Points
+### Internal Boundaries
 
-| Data Location | MCP Tool(s) | Operation | Notes |
-|---------------|-------------|-----------|-------|
-| `data/docs/index.json` | `list_docs` | Read | Returns slug+title pairs |
-| `data/docs/{slug}.md` | `read_doc` | Read | Validate slug before path construction |
-| `data/kanban/index.json` | `get_kanban`, `add_task` | Read + Write | `add_task` appends to tasks array |
-| `data/kanban/task-NNN.json` | `get_kanban`, `add_task`, `move_task` | Read + Write | `move_task` overwrites column field |
-| `data/progress/index.json` | `get_progress` | Read | Registry of milestone IDs |
-| `data/progress/milestone-NN.json` | `get_progress`, `update_progress` | Read + Write | `update_progress` mutates tasksCompleted/status |
+| Boundary | Communication | Dependency Direction |
+|----------|---------------|---------------------|
+| `app.js` → `auth.js` | Calls `isAuthenticated()`, `getToken()`, `login()`, `logout()` — global functions | app.js depends on auth.js |
+| `app.js` → `github-api.js` | Calls `updateDoc()`, `createDoc()`, `deleteDoc()`, `updateJsonFile()` | app.js depends on github-api.js |
+| `app.js` → `search.js` | Calls `renderSearch(query)` for search route | app.js depends on search.js |
+| `app.js` → `kanban-dnd.js` | Calls `wireKanbanDnD(columns, tasks)` after kanban DOM renders | app.js depends on kanban-dnd.js |
+| `github-api.js` → `auth.js` | Calls `getToken()` inside each API function — never stores token itself | github-api.js depends on auth.js |
+| `kanban-dnd.js` → `github-api.js` | Calls `updateTaskColumn(taskId, column)` on confirmed drop | kanban-dnd.js depends on github-api.js |
+| MCP `tools/read.ts` ↔ `data/docs/` | `readFileSync` — same `DOCS_DIR` constant already defined in `paths.ts` | No new dependency |
+| MCP `tools/write.ts` ↔ `data/docs/` | `writeFileSync` + `renameSync` + `unlinkSync` for delete — follows existing atomic write pattern | No new dependency |
 
-### .mcp.json Configuration
-
-```json
-{
-  "mcpServers": {
-    "keloia-docs": {
-      "command": "node",
-      "args": ["mcp-server/dist/index.js"],
-      "cwd": "/absolute/path/to/keloia-docs"
-    }
-  }
-}
-```
-
-The `cwd` ensures `REPO_ROOT` derivation via `import.meta.url` anchors correctly to the repo root regardless of where Claude Code was launched from. Claude Code substitutes the project root automatically for `.mcp.json` in the repo root.
-
-### Internal Component Boundaries
-
-| Boundary | Communication | Notes |
-|----------|---------------|-------|
-| `app.js` ↔ `data/docs/index.json` | `fetch("data/docs/index.json")` relative URL | Relative from SPA at repo root |
-| `app.js` ↔ `data/docs/{slug}.md` | `fetch("data/docs/{slug}.md")` | Same origin as SPA on GitHub Pages |
-| `app.js` ↔ `data/kanban/index.json` | `fetch("data/kanban/index.json")` | Fan-out to individual task files |
-| `app.js` ↔ `data/progress/index.json` | `fetch("data/progress/index.json")` | Fan-out to individual milestone files |
-| `mcp-server` ↔ `data/docs/` | `fs.readFileSync(join(DOCS_DIR, ...))` | Absolute path derived from `import.meta.url` |
-| `mcp-server` ↔ `data/kanban/` | `fs.readFileSync` / `fs.writeFileSync` + `renameSync` | Atomic writes for `add_task`, `move_task` |
-| `mcp-server` ↔ `data/progress/` | Same pattern as kanban | Atomic writes for `update_progress` |
-| Claude Code ↔ MCP server | JSON-RPC 2.0 over stdio | Spawned as child process, `.mcp.json` configures this |
-
-## Build Order for Server Foundation → Read Tools → Write Tools
-
-The MCP server has internal dependency ordering within the milestone. Build in this sequence:
+## Build Order (Dependency-Driven)
 
 ```
-Step 1 — Server Foundation
-  mcp-server/package.json
-  mcp-server/tsconfig.json
-  mcp-server/src/index.ts (skeleton: McpServer init, StdioTransport, no tools yet)
-  Verify: npm run build compiles, node dist/index.js starts without error
+Phase 1 — Full-text search (no auth, no writes — lowest risk, immediate value)
+  1a. Add MiniSearch CDN script tag to index.html
+  1b. Write search.js (index builder + render)
+  1c. Add search input to sidebar HTML
+  1d. Add #/search route to app.js router
+  Verify: search works end-to-end without login
 
-Step 2 — Path Resolution Layer (inside index.ts)
-  import.meta.url → REPO_ROOT → DOCS_DIR, KANBAN_DIR, PROGRESS_DIR
-  Verify: log paths to stderr at startup, confirm they resolve to actual directories
+Phase 2 — MCP search + doc CRUD tools (independent of site auth)
+  2a. Add keloia_search_docs to tools/read.ts
+  2b. Add keloia_add_doc, keloia_edit_doc, keloia_delete_doc to tools/write.ts
+  2c. npm run build in mcp-server/, verify tools register
+  Verify: Claude Code can search and CRUD docs via MCP
 
-Step 3 — Read Tools (no filesystem mutations, safe to build first)
-  list_docs   — reads data/docs/index.json
-  read_doc    — reads data/docs/{slug}.md (add slug sanitization here)
-  get_kanban  — reads kanban index + fan-out to task files
-  get_progress — reads progress index + fan-out to milestone files
-  Verify: each tool via MCP Inspector or direct stdio test
+Phase 3 — MCP setup guide page (static content, no code changes)
+  3a. Write data/docs/mcp-setup.md
+  3b. Add entry to data/docs/index.json
+  Verify: page appears in sidebar, renders correctly
 
-Step 4 — Write Tools (filesystem mutations, build after reads proven correct)
-  add_task        — writes new task-NNN.json + updates index.json (atomic)
-  move_task       — overwrites task-NNN.json column field (atomic)
-  update_progress — overwrites milestone-NN.json fields (atomic)
-  Verify: each tool creates/mutates file, site re-fetches correctly
+Phase 4 — GitHub OAuth (required before any site write features)
+  4a. Create GitHub OAuth App, note client_id + client_secret
+  4b. Write cloudflare-worker/oauth-proxy.js
+  4c. Deploy Worker, set CLIENT_SECRET env var
+  4d. Write auth.js (popup, poll, token management)
+  4e. Add login button + auth badge to index.html
+  4f. Wire login/logout in app.js
+  Verify: login flow completes, token appears in localStorage
 
-Step 5 — Claude Code Integration
-  .mcp.json at repo root
-  Verify: Claude Code picks up server, all tools appear in tool list
+Phase 5 — GitHub API wrapper (requires auth)
+  5a. Write github-api.js (getFileSha, createDoc, updateDoc, deleteDoc, updateJsonFile)
+  Verify: can call api.github.com with token, PUT a test file
+
+Phase 6 — Doc CRUD UI (requires auth + GitHub API)
+  6a. Add Edit/Save/Cancel buttons to renderDoc() in app.js
+  6b. Add Add Doc form to sidebar or main area
+  6c. Add Delete with confirmation
+  Verify: full CRUD round-trip (edit saves to GitHub, re-renders correctly)
+
+Phase 7 — Interactive kanban with drag-and-drop (requires auth + GitHub API)
+  7a. Write kanban-dnd.js (DnD event wiring + confirmation modal)
+  7b. Refactor renderKanban() to call wireKanbanDnD() after DOM render
+  7c. Add drag-over column highlight CSS
+  Verify: drag card to new column → confirm → API updates task file → board re-renders
 ```
 
-**Why this order:**
-
-- Foundation before tools: tools cannot be registered without a compiled, running server.
-- Path resolution before any reads: every tool depends on `REPO_ROOT` being correct. Verify this once; don't debug path issues inside tool handlers.
-- Read tools before write tools: reads are idempotent and safe to test against live data. Writes modify disk; only test once read behavior is confirmed correct.
-- Write tools last: atomic write pattern (tmp + rename) must be correct before shipping. A bug in write tools corrupts data files used by both the site and MCP server.
+**Why this order:** Search is zero-risk and ships value immediately. MCP tools are independent of site auth and use the established write pattern. OAuth is the hardest integration point — it gates all other write features. Auth before API before UI ensures each layer is verified before depending on it. Kanban DnD last because it combines auth, API, and DOM complexity.
 
 ## Anti-Patterns
 
-### Anti-Pattern 1: console.log in stdio MCP Server
+### Anti-Pattern 1: Direct OAuth Token Exchange from Browser
 
-**What people do:** Use `console.log()` for debugging.
+**What people do:** POST directly to `https://github.com/login/oauth/access_token` from JavaScript in the browser, sometimes trying to put the client_secret in a config file or environment variable.
 
-**Why it's wrong:** `console.log()` writes to stdout. The MCP protocol transmits JSON-RPC messages over stdout. Any non-JSON bytes corrupt the stream and break the connection — silently from the developer's perspective.
+**Why it's wrong:** GitHub's OAuth token endpoints do NOT send CORS headers — the browser blocks the response before JavaScript can read it. The client_secret would also be exposed in the site source code, allowing anyone to create tokens on behalf of your app.
 
-**Do this instead:** Use `console.error()` exclusively. It writes to stderr, which Claude Code displays in its log without interfering with the protocol. This is the official MCP documentation's primary warning.
+**Do this instead:** Use a Cloudflare Worker (or equivalent serverless function) to hold the client_secret in an environment variable and perform the code-for-token exchange server-side. The SPA only ever receives and stores the final token.
 
-### Anti-Pattern 2: Hardcoded Absolute Paths
+### Anti-Pattern 2: Parallel GitHub Contents API Writes
 
-**What people do:** Write `const DOCS_DIR = "/Users/enjat/Github/keloia/keloia-docs/data/docs"`.
+**What people do:** Fan out multiple PUT or DELETE requests concurrently to save time when making compound changes (e.g., create file + update index.json at the same time).
 
-**Why it's wrong:** Breaks immediately on any other machine, any other clone location, or any CI environment.
+**Why it's wrong:** GitHub's official documentation explicitly warns: "If you use this endpoint and the Delete a file endpoint in parallel, the concurrent requests will conflict and you will receive errors." The SHA used to authenticate a write becomes stale the moment any other write completes.
 
-**Do this instead:** Derive from `import.meta.url`:
-```typescript
-const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const DOCS_DIR  = join(REPO_ROOT, "data", "docs");
-```
-The `..", ".."` navigates from `mcp-server/dist/index.js` up two levels to the repo root. This is the correct depth given the `dist/` output directory.
+**Do this instead:** Serialize all write operations. For compound changes (add doc file + update index.json), always complete the first write, await the response, then start the second write.
 
-### Anti-Pattern 3: Directory Scan Instead of Index Read
+### Anti-Pattern 3: Growing app.js with Auth + API + DOM Logic
 
-**What people do:** Use `fs.readdirSync(KANBAN_DIR).filter(f => f.match(/^task-\d+\.json$/))` to discover tasks.
+**What people do:** Add authentication state checks, GitHub API calls, and DnD event handlers directly into `app.js` alongside the existing router and renderers.
 
-**Why it's wrong:** Bypasses the `index.json` registry. The index controls ordering and is the schema anchor (`schemaVersion`). Directory order is filesystem-defined and not consistent across OSes. Tasks not in the index (e.g., orphans from a failed write) would appear incorrectly.
+**Why it's wrong:** `app.js` is already 263 lines and owns routing, doc rendering, kanban rendering, and progress rendering. Adding auth, GitHub API, search, and DnD to it produces an 800+ line file where unrelated concerns are entangled. Debugging a search bug means reading through kanban DnD code.
 
-**Do this instead:** Always read `index.json` first, then use its task/milestone arrays to determine which files to load. Honor the same contract the site uses.
+**Do this instead:** Keep `app.js` as a dispatcher only. Each new concern gets its own file loaded as a separate `<script>` tag. Functions are globally scoped (no module system, no bundler). `app.js` calls `renderSearch()`, `login()`, `updateDoc()` — it doesn't implement them.
 
-### Anti-Pattern 4: Non-Atomic Write (writeFileSync directly)
+### Anti-Pattern 4: sessionStorage for the OAuth Token
 
-**What people do:** `writeFileSync(join(KANBAN_DIR, "index.json"), newContent)` directly.
+**What people do:** Write the GitHub token to `sessionStorage` instead of `localStorage`, reasoning it's safer because it doesn't persist across browser restarts.
 
-**Why it's wrong:** If the process is killed between the file being truncated and the write completing, the JSON file is left in a corrupt state. Both the site and MCP server will fail to parse it on the next access.
+**Why it's wrong:** The OAuth popup window and the main SPA window are separate browser contexts. `sessionStorage` is NOT shared between windows — `localStorage` IS. The popup cannot write a token that the main window can read if `sessionStorage` is used. The poll loop will never detect the token.
 
-**Do this instead:** Write to a `.tmp` file, then `renameSync` to the target. On POSIX filesystems (macOS, Linux), `rename` is atomic. The original file is either fully replaced or untouched.
+**Do this instead:** Write the token to `localStorage` from the popup. Provide an explicit logout function that calls `localStorage.removeItem('github_token')`. For a single-developer tool, token persistence across sessions is a feature, not a vulnerability.
 
-### Anti-Pattern 5: Serving data/ from mcp-server/
+### Anti-Pattern 5: Triggering Index Rebuild on Every Keystroke
 
-**What people do:** Have the MCP server expose an HTTP endpoint and have the site call it instead of reading static files.
+**What people do:** Call `buildIndex()` inside the search input handler without caching, rebuilding the MiniSearch index on every keystroke.
 
-**Why it's wrong:** Adds a runtime dependency for the site (server must be running), breaks GitHub Pages static hosting, adds CORS complexity, destroys the zero-build-step constraint.
+**Why it's wrong:** Building the index requires fetching all doc files via HTTP — N network requests on every keystroke. This is N×keystroke rate fetches, hammering GitHub Pages with redundant requests.
 
-**Do this instead:** Both the site and MCP server read the same `data/` files independently. No runtime coupling. The site reads via HTTP from GitHub Pages. The MCP server reads via `fs` locally. They share only the filesystem.
+**Do this instead:** Build the index once (lazy, on first search interaction) and cache it in a module-level variable. Subsequent searches use the cached index with zero network traffic.
 
 ## Scaling Considerations
 
-This is a 1-2 user internal tool. These notes are for completeness only.
-
 | Scale | Architecture Adjustments |
 |-------|--------------------------|
-| 1-2 users (current target) | No changes. Filesystem is the database. Single-user sequential writes. This is the intended operating mode. |
-| 2-5 users, occasional concurrent writes | Add optimistic concurrency check: read index, mutate in memory, write with a check that index hasn't changed since read. Or use a lock file. |
-| Multi-machine team | Switch MCP transport from stdio to Streamable HTTP. Server already designed to make this swap — the tool logic is transport-agnostic. |
-| >50 tasks | Consider `add_task` auto-compacting: keep index.tasks as registry, add `lastModified` field to task files for sorting. Still no database needed. |
-| >100 docs | Add title + summary to `data/docs/index.json` entries so `list_docs` can return richer results without reading every `.md` file. Schema already supports this (just add fields). |
+| 1-2 users (current) | Current approach is correct — localStorage token, client-side search, direct GitHub API writes, no server persistence needed |
+| 10-50 users | GitHub Contents API rate limits (5000 req/hr per token) become relevant if users share a token. Move to per-user OAuth (already planned). Consider pre-building search index as a committed JSON file, regenerated in GitHub Actions on push. |
+| 100+ users | GitHub API rate limits per user become a real constraint at write-heavy usage. Concurrent writes need client-side queuing. At this scale, re-evaluate the zero-build constraint — a lightweight backend (Cloudflare Workers KV or Vercel Edge) would be appropriate. |
+
+### Scaling Priorities
+
+1. **First bottleneck:** Search index build time if docs grow beyond ~50 files. Fix: pre-build `data/docs/search-index.json` in GitHub Actions (`npm run build-index`), load from CDN instead of fetching all markdown files at runtime.
+2. **Second bottleneck:** Write conflicts if multiple users edit simultaneously. Fix: optimistic SHA freshness — if a PUT fails due to stale SHA, re-fetch SHA and retry once before showing an error.
 
 ## Sources
 
-- [MCP TypeScript SDK — Official docs/server.md](https://github.com/modelcontextprotocol/typescript-sdk/blob/main/docs/server.md) — HIGH confidence. Official documentation for McpServer, StdioServerTransport, tool registration.
-- [Build an MCP Server — modelcontextprotocol.io](https://modelcontextprotocol.io/docs/develop/build-server) — HIGH confidence. Official TypeScript quickstart, verified stdio transport pattern and package.json/tsconfig.json setup.
-- [Node.js ESM __dirname equivalent — nodejs.org](https://nodejs.org/api/esm.html) — HIGH confidence. Official Node.js ESM documentation, import.meta.url + fileURLToPath pattern.
-- [import.meta.dirname in Node 20.11+ — sonarsource.com](https://www.sonarsource.com/blog/dirname-node-js-es-modules/) — MEDIUM confidence. Confirms modern Node.js shortcut; fileURLToPath approach used for compatibility.
-- [Atomic write pattern — npm/write-file-atomic](https://www.npmjs.com/package/write-file-atomic) — MEDIUM confidence. Confirms tmp + rename as the standard atomic write pattern on local filesystems.
-- Live data files verified: `data/kanban/index.json`, `data/kanban/task-001.json`, `data/progress/index.json`, `data/progress/milestone-01.json`, `data/docs/index.json` — HIGH confidence. Schemas read directly from live repo.
+- [GitHub REST API CORS support — official docs](https://docs.github.com/en/rest/using-the-rest-api/using-cors-and-jsonp-to-make-cross-origin-requests) — HIGH confidence. `Access-Control-Allow-Origin: *` confirmed from official GitHub documentation.
+- [GitHub Contents API endpoints — official docs](https://docs.github.com/en/rest/repos/contents) — HIGH confidence. GET/PUT/DELETE endpoints, SHA requirement, serialization warning confirmed.
+- [GitHub OAuth App authorization flows — official docs](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps) — HIGH confidence. Device flow requires client_secret for polling; web flow requires server-side exchange.
+- [OAuth web flow endpoints don't support CORS — GitHub issue #330](https://github.com/isaacs/github/issues/330) — HIGH confidence. Longstanding documented limitation.
+- [Simon Willison: GitHub OAuth for static sites via Cloudflare Workers](https://til.simonwillison.net/cloudflare/workers-github-oauth) — MEDIUM confidence. Working implementation demonstrating popup + localStorage pattern. Not official docs, but a live reference implementation.
+- [gr2m/cloudflare-worker-github-oauth-login](https://github.com/gr2m/cloudflare-worker-github-oauth-login) — MEDIUM confidence. Production-ready Cloudflare Worker for GitHub OAuth token exchange.
+- [MiniSearch v7.2.0 on jsDelivr CDN](https://www.jsdelivr.com/package/npm/minisearch) — HIGH confidence. Version 7.2.0, September 2025. ESM + CJS + UMD builds available.
+- [MDN: Kanban board with HTML Drag and Drop API](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Kanban_board) — HIGH confidence. Official MDN reference, no external library required.
 
 ---
-*Architecture research for: MCP server integration with keloia-docs filesystem data layer*
+*Architecture research for: Keloia Docs v2.0 — Search + Auth + CRUD + Kanban DnD integration*
 *Researched: 2026-02-22*

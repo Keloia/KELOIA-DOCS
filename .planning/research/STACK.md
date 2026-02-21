@@ -42,224 +42,276 @@
 | tsc | Compile TypeScript to JavaScript for production | Output to `dist/`. Required because Claude Code launches the server via `node dist/index.js`. |
 | @types/node | Node.js type definitions | Required for `fs`, `path`, `process` types in TypeScript. |
 
+---
+
+## v2.0 Stack Additions
+
+These are the **only** new libraries needed for v2.0 features. Everything else carries forward unchanged.
+
+### Full-Text Search (Client-Side, No Build Step)
+
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| FlexSearch | 0.8.212 (CDN) | Full-text search index built in the browser at page load | Fastest client-side full-text search library (benchmarks 1M+ queries/sec). Zero dependencies. Ships a UMD bundle loadable via `<script>` tag — no build step. `Document` index supports multi-field search (title + body). v0.8 is the current npm stable version. |
+
+**CDN URL:**
+```html
+<script src="https://cdn.jsdelivr.net/npm/flexsearch@0.8.212/dist/flexsearch.bundle.min.js"></script>
+```
+
+**Browser global after script tag:** `window.FlexSearch` — access as `new FlexSearch.Document(...)`.
+
+**Why not Fuse.js:** Fuse.js (7.1.0) is a fuzzy-search library, not full-text search. It scores approximate string matches but cannot rank by term frequency or field weighting — which produces poor results when searching markdown bodies. Fuse.js is the right choice for small lists (sidebar navigation, autocomplete); FlexSearch is right for document corpus search. This project needs the latter.
+
+**Why not Pagefind:** Pagefind requires a post-build CLI step to crawl the built site and produce a search index. This project's hard constraint is zero build step — no post-processing allowed. FlexSearch builds the index at runtime by fetching and parsing the same markdown files the site already renders.
+
+**Search index construction pattern (no build step):**
+```javascript
+// Build index at startup from fetched doc content
+const index = new FlexSearch.Document({
+  document: {
+    id: "id",
+    index: ["title", "body"],
+    store: ["title", "filename", "snippet"]
+  }
+});
+
+// For each doc in data/docs/index.json:
+// 1. Fetch the markdown file (already done for rendering)
+// 2. Add to index: index.add({ id, title, body: plaintext, filename })
+// Search: index.search(query, { enrich: true, limit: 10 })
+```
+
+### MCP Search Tool (Server-Side, Regex/Filter)
+
+No new npm packages required. The `keloia_search_docs` tool is implemented using Node.js built-in `fs.readFileSync` + `String.prototype.includes` / `RegExp` matching across the `data/docs/` directory. The MCP server already reads these files for `read_doc`. Search is a loop over those same file reads.
+
+**Why no search library for MCP:** The document corpus is small (<50 files, <100KB total). A linear scan with regex is faster to implement and has zero overhead. FlexSearch on the MCP side would add an in-memory index that must be rebuilt on every tool invocation (no persistence across stdio calls), making it slower than direct file reads.
+
+### GitHub OAuth (Static Site + Cloudflare Worker)
+
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| Cloudflare Worker | free tier | OAuth code-for-token exchange (server-side secret required) | GitHub OAuth requires a server-side `client_secret` that must never ship in browser JS. A Cloudflare Worker handles only the token exchange — ~40 lines of JS. Free tier: 100,000 req/day, which is more than sufficient for a 1-2 user internal tool. No npm, no deploy pipeline — paste code into Cloudflare dashboard and set env vars. |
+
+**Why a worker is unavoidable:** GitHub's OAuth Web Flow has a mandatory server-side step: exchanging the authorization `code` for an `access_token` requires a POST to `https://github.com/login/oauth/access_token` that includes the `client_secret`. Exposing the secret in browser JS allows anyone to impersonate the OAuth app. There is no pure-client workaround — the Device Flow also requires a backend relay per the GitHub docs.
+
+**OAuth flow architecture:**
+```
+Browser                    Cloudflare Worker              GitHub
+  |                               |                          |
+  |-- open popup window --------> |                          |
+  |                               |-- redirect to ---------> |
+  |                               |   github.com/login/...   |
+  |                               |                          |
+  |                               |<-- ?code=XYZ ----------- |
+  |                               |                          |
+  |                               |-- POST /access_token --> |
+  |                               |   (includes secret)      |
+  |                               |<-- { access_token } ---- |
+  |                               |                          |
+  |                               |-- set localStorage ----> |
+  |<-- poll localStorage -------> |                          |
+  |   (detect token)              |                          |
+```
+
+**Worker implementation (no npm, no external libraries):**
+```javascript
+// Environment variables set in Cloudflare dashboard:
+// GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GITHUB_REDIRECT_URI
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const code = url.searchParams.get("code");
+
+    if (!code) {
+      // Step 1: redirect to GitHub auth
+      const state = crypto.randomUUID();
+      const authUrl = `https://github.com/login/oauth/authorize?client_id=${env.GITHUB_CLIENT_ID}&state=${state}&scope=repo`;
+      return Response.redirect(authUrl, 302);
+    }
+
+    // Step 2: exchange code for token
+    const resp = await fetch("https://github.com/login/oauth/access_token", {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: env.GITHUB_CLIENT_ID,
+        client_secret: env.GITHUB_CLIENT_SECRET,
+        code
+      })
+    });
+    const { access_token } = await resp.json();
+
+    // Step 3: return HTML that stores token and closes popup
+    return new Response(
+      `<script>localStorage.setItem('github_token', '${access_token}'); window.close();</script>`,
+      { headers: { "Content-Type": "text/html" } }
+    );
+  }
+};
+```
+
+**GitHub OAuth App setup:** Register at `github.com/settings/developers`. Set callback URL to the Cloudflare Worker URL. Required scope: `repo` (for file CRUD on the repository). Scope `public_repo` is sufficient if the repo is public and less permissive.
+
+**Client-side integration:**
+```javascript
+// In app.js — trigger OAuth
+function login() {
+  window.open(CLOUDFLARE_WORKER_URL, "oauth", "width=600,height=700");
+  const poll = setInterval(() => {
+    const token = localStorage.getItem("github_token");
+    if (token) { clearInterval(poll); onLogin(token); }
+  }, 500);
+}
+
+// Token stored in localStorage — persists across page loads
+// Token passed as Authorization header to GitHub API calls
+```
+
+### GitHub API File CRUD
+
+No new npm packages required. The GitHub REST API is called directly from browser JS using the native `fetch` API. No Octokit SDK needed — the endpoint surface is narrow (3 operations) and the raw API is straightforward.
+
+**Endpoints used:**
+
+| Operation | Method | Endpoint | Notes |
+|-----------|--------|----------|-------|
+| Read file (get SHA) | GET | `/repos/{owner}/{repo}/contents/{path}` | Returns `{ sha, content }` — SHA required for update/delete |
+| Create file | PUT | `/repos/{owner}/{repo}/contents/{path}` | Body: `{ message, content: base64(body) }` |
+| Update file | PUT | `/repos/{owner}/{repo}/contents/{path}` | Body: `{ message, content: base64(body), sha }` — sha from prior GET |
+| Delete file | DELETE | `/repos/{owner}/{repo}/contents/{path}` | Body: `{ message, sha }` |
+
+**Required auth header:** `Authorization: Bearer <github_token>` (token from localStorage after OAuth)
+
+**Content encoding:** All file content must be Base64-encoded in PUT requests. In the browser: `btoa(unescape(encodeURIComponent(content)))` for UTF-8 safety. Decode with `decodeURIComponent(escape(atob(base64)))`.
+
+**Critical constraint — SHA required for mutations:** Every PUT update and DELETE requires the current file SHA. The flow is always: GET the file first (to obtain `sha`), then PUT/DELETE. Never cache SHA across writes — concurrent edits from another client will change it.
+
+**Concurrency note:** GitHub API docs explicitly warn that PUT and DELETE to the same path in parallel will conflict. All file operations must be serial (await each call before the next).
+
+**No Octokit needed because:** Octokit is a 50KB+ SDK. This project calls 3 endpoints with a consistent pattern. The raw fetch pattern is 10-15 lines per operation and has zero runtime overhead.
+
+### Interactive Kanban Drag-and-Drop
+
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| SortableJS | 1.15.7 (CDN) | Cross-list drag-and-drop for kanban columns | Only drag-and-drop library with proven cross-list support, touch device support, no jQuery, no build step, and active maintenance. 29k GitHub stars. Ships UMD bundle via CDN. The `group` option enables dragging cards between kanban columns — this is the specific feature needed. |
+
+**CDN URL:**
+```html
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.7/Sortable.min.js"></script>
+```
+
+**Why not native HTML5 Drag and Drop API directly:** The native API has no touch support on mobile (Safari/Chrome on iOS/Android). Touch support requires either SortableJS (which polyfills internally) or adding a separate `@dragdroptouch/drag-drop-touch` polyfill. SortableJS handles both mouse and touch in a single library with a clean API.
+
+**Why not dragula.js:** Dragula is abandoned (last release 2016). SortableJS is actively maintained (1.15.7 released 2024).
+
+**Cross-column drag pattern:**
+```javascript
+// Initialize once per column div (all share the same group name)
+document.querySelectorAll(".kanban-column").forEach(col => {
+  Sortable.create(col, {
+    group: "kanban",       // same group = cards can move between columns
+    sort: true,            // allow reordering within same column
+    animation: 150,        // smooth 150ms animation
+    onEnd(evt) {
+      const cardId = evt.item.dataset.taskId;
+      const newColumn = evt.to.dataset.column;
+      const oldColumn = evt.from.dataset.column;
+      if (newColumn !== oldColumn) {
+        // show confirmation modal, then call GitHub API on confirm
+        confirmMove(cardId, oldColumn, newColumn);
+      }
+    }
+  });
+});
+```
+
+**Confirmation modal:** Built with vanilla JS + CSS (no library). A `<dialog>` element or a div with position:fixed. Standard pattern — no additional dependency.
+
+---
+
 ## Installation
 
 ```bash
-# MCP server dependencies (from mcp-server/ directory)
+# MCP server dependencies (from mcp-server/ directory) — UNCHANGED from v1.1
 npm install @modelcontextprotocol/sdk zod
 
-# Dev dependencies
+# Dev dependencies — UNCHANGED from v1.1
 npm install -D typescript @types/node tsx
+
+# v2.0 adds NO new npm packages to mcp-server/
+# Site additions are all CDN script tags — no npm install
 ```
 
-**package.json configuration:**
-```json
-{
-  "name": "keloia-mcp-server",
-  "version": "1.0.0",
-  "type": "module",
-  "main": "dist/index.js",
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsx src/index.ts",
-    "start": "node dist/index.js"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.27.0",
-    "zod": "^3.25.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "tsx": "^4.7.0",
-    "typescript": "^5.9.3"
-  }
-}
+**New CDN script tags for site (add to index.html):**
+```html
+<!-- Full-text search -->
+<script src="https://cdn.jsdelivr.net/npm/flexsearch@0.8.212/dist/flexsearch.bundle.min.js"></script>
+
+<!-- Drag-and-drop kanban -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.7/Sortable.min.js"></script>
 ```
 
-**tsconfig.json (Node 20+, ES modules):**
-```json
-{
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "Node16",
-    "moduleResolution": "Node16",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
-}
-```
-
-**Note:** The official MCP quickstart uses `module: "Node16"` / `moduleResolution: "Node16"`. These are equivalent to `NodeNext` for the current Node LTS. Use `Node16` — it's what the official docs show and it resolves the SDK's `.js` extension imports correctly.
-
-## Claude Code Integration
-
-**`.mcp.json` at project root (project-scoped, checked into version control):**
-```json
-{
-  "mcpServers": {
-    "keloia-docs": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["<absolute-path-to-repo>/mcp-server/dist/index.js"]
-    }
-  }
-}
-```
-
-**Add via CLI (recommended — writes `.mcp.json` automatically):**
-```bash
-claude mcp add --scope project keloia-docs -- node /absolute/path/to/mcp-server/dist/index.js
-```
-
-**Key constraint:** Path in `args` must be absolute. Claude Code launches the server as a child process from an arbitrary working directory.
-
-## Core MCP Server Pattern
-
-The canonical TypeScript MCP server structure from official docs:
-
-```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
-
-const server = new McpServer(
-  { name: "keloia-docs", version: "1.0.0" },
-  { capabilities: { logging: {} } }   // enable ctx.mcpReq.log() in handlers
-);
-
-// Tool registration: inputSchema is a Zod object schema
-server.registerTool(
-  "read_doc",
-  {
-    title: "Read Document",
-    description: "Read a documentation file by filename",
-    inputSchema: z.object({
-      filename: z.string().describe("Filename from data/docs/index.json")
-    })
-  },
-  async ({ filename }) => {
-    // implementation reads from data/docs/<filename>
-    return { content: [{ type: "text", text: content }] };
-  }
-);
-
-// Stdio transport: Claude Code spawns this process and communicates over stdin/stdout
-async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error("Keloia MCP server running on stdio"); // stderr is safe; stdout is reserved for JSON-RPC
-}
-
-main().catch((error) => {
-  console.error("Fatal error:", error);
-  process.exit(1);
-});
-```
-
-**Critical rule:** Never use `console.log()` in a stdio MCP server. It writes to stdout, which corrupts the JSON-RPC stream. Use `console.error()` exclusively for all debug output.
-
-**inputSchema API note:** `registerTool()` accepts either a plain Zod object `z.object({...})` or a plain object of Zod fields `{ key: z.string() }`. Both work. Using `z.object()` directly is cleaner and enables top-level schema reuse.
-
-## Integration with Existing Data Layer
-
-The MCP server reads the same files the static site renders. No duplication.
-
-| Data | File Pattern | MCP Access | Notes |
-|------|-------------|------------|-------|
-| Docs index | `data/docs/index.json` | `list_docs` — read index, return filenames | `{ "files": ["architecture.md", "value-proposition.md"] }` |
-| Doc content | `data/docs/<name>.md` | `read_doc` — read file, return markdown | Plain markdown string in text content block |
-| Kanban index | `data/kanban/index.json` | `get_kanban` — read index, load task files | `{ schemaVersion, columns, tasks: ["task-001", ...] }` |
-| Task files | `data/kanban/task-<id>.json` | `add_task`, `move_task` — write with Zod validation | `{ id, title, column, description, assignee }` |
-| Progress index | `data/progress/index.json` | `get_progress` — read index, load milestone files | `{ schemaVersion, milestones: ["milestone-01", ...] }` |
-| Milestone files | `data/progress/milestone-<id>.json` | `update_progress` — write with Zod validation | `{ id, phase, title, status, tasksTotal, tasksCompleted, notes }` |
-
-**Path resolution:** The MCP server must resolve `data/` paths relative to the repo root, not the `mcp-server/` directory. Use `path.resolve()` anchored to a known absolute path (e.g. derived from `import.meta.url`). See PITFALLS.md for the specific pattern.
-
-**Zod schemas mirror existing JSON shapes:**
-
-```typescript
-// Task schema (mirrors data/kanban/task-001.json)
-const TaskSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  column: z.string(),
-  description: z.string(),
-  assignee: z.string().nullable()
-});
-
-// Milestone schema (mirrors data/progress/milestone-01.json)
-const MilestoneSchema = z.object({
-  id: z.string(),
-  phase: z.number(),
-  title: z.string(),
-  status: z.enum(["done", "active", "planned"]),
-  tasksTotal: z.number(),
-  tasksCompleted: z.number(),
-  notes: z.string()
-});
-```
-
-**Atomic write pattern (no extra dependency — Node built-ins only):**
-
-```typescript
-import { writeFileSync, renameSync } from "fs";
-
-function atomicWrite(targetPath: string, content: string): void {
-  const tmpPath = `${targetPath}.tmp`;
-  writeFileSync(tmpPath, content, "utf8");
-  renameSync(tmpPath, targetPath);  // atomic on POSIX; safe for this use case
-}
-```
-
-`fs.renameSync` is atomic on the same filesystem on POSIX systems. The `write-file-atomic` npm package is unnecessary for a local dev tool on macOS/Linux with < 100 tasks.
+**Cloudflare Worker:** No deploy pipeline. Paste ~40 lines of JS into the Cloudflare dashboard. Set three env vars (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_REDIRECT_URI`). One-time setup, no CI/CD needed.
 
 ## Alternatives Considered
 
 | Recommended | Alternative | When to Use Alternative |
 |-------------|-------------|-------------------------|
-| marked.js | micromark, remark | Building a Node.js pipeline, not browser rendering. Both require a build step or bundler for browser use. |
-| marked.js | Showdown.js | Showdown is less actively maintained and larger. Choose if you need very old browser support (IE11). |
-| marked.js | markdown-it | Heavier (plugins ecosystem), also CDN-available. Choose if you need advanced extensions (footnotes, math). Both are valid; marked.js is simpler for this use case. |
-| GitHub Pages | Cloudflare Pages, Netlify | Pages supports build steps and serverless functions. Overkill here; zero-build GitHub Pages is simpler and free. |
-| Vanilla JS | Lit, Alpine.js | Alpine or Lit are reasonable if you need component reactivity at scale. For a 1-2 user internal tool, vanilla JS is less code. |
-| @modelcontextprotocol/sdk v1.27.0 | @modelcontextprotocol/sdk v2 (pre-alpha) | Never — v2 is pre-alpha, API is changing. Switch when v2 is stable (anticipated Q1 2026, not yet released as of Feb 2026). |
-| @modelcontextprotocol/sdk | FastMCP (community wrapper) | FastMCP adds ergonomics but is a community package with less guarantee of keeping up with protocol changes. Use the official SDK. |
-| zod v3.25.x | zod v4.x | v4 is also safe — the basic API (`z.object`, `z.string`, `z.number`) is identical. Breaking changes in v4 are only in error customization APIs. Use v3.25 for maximum conservatism, v4 if you prefer the current version. |
-| tsc | esbuild, tsup | Bundlers add complexity unnecessary for a single-file server. `tsc` is sufficient. |
-| Node built-in fs + renameSync | write-file-atomic npm package | Use `write-file-atomic` only if you need Windows compatibility or file ownership control. Overkill for this local dev tool. |
+| FlexSearch 0.8 | Fuse.js 7.1 | Choose Fuse.js when you need fuzzy/typo-tolerant autocomplete on small lists (<200 items). Choose FlexSearch for full-text document search — it handles term frequency and field weighting. |
+| FlexSearch 0.8 | Pagefind | Choose Pagefind if you already have a build step (e.g. Astro, Hugo). It produces a static search index that loads fast. Not viable here — requires post-build CLI. |
+| FlexSearch 0.8 | Lunr.js | Lunr.js is unmaintained (last commit 2021). FlexSearch is faster and maintained. |
+| Cloudflare Worker | Netlify Edge Function | Equivalent functionality; choose Netlify if the site already deploys via Netlify. This site deploys via GitHub Pages — adding Netlify just for OAuth is more infrastructure. |
+| Cloudflare Worker | Vercel Serverless Function | Same tradeoff as Netlify — adds a deploy dependency. Cloudflare Worker is free, standalone, no project coupling. |
+| Cloudflare Worker | GitHub App (vs OAuth App) | GitHub Apps use installation tokens and are for multi-user platforms. OAuth Apps are simpler for single-user authorization. Use GitHub App only if you need org-level webhook events or GitHub Actions context. |
+| SortableJS | dragula.js | Never — dragula is abandoned since 2016. |
+| SortableJS | interact.js | interact.js supports more gesture types but is heavier. Choose for complex resize/rotate interactions. Overkill for kanban card drag. |
+| SortableJS | Native DnD + dragdroptouch polyfill | Valid, zero-dependency approach. Adds ~30 lines of implementation code vs SortableJS's one function call. Choose if bundle size is a constraint (it is not here — CDN). |
+| GitHub REST API (raw fetch) | Octokit.js | Use Octokit when you need pagination helpers, retry logic, or many endpoints. For 3 CRUD endpoints, raw fetch is simpler and lighter. |
 
 ## What NOT to Use
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
 | React / Astro / VitePress / Docusaurus | All require a build step. Zero-build is a hard project constraint. | Vanilla HTML/CSS/JS + marked.js from CDN |
-| Tailwind CSS | Requires PostCSS build step. | Handwritten CSS — the site has ~3 views and 1 user. |
-| ts-node | Broken with ESM modules in Node 20+. tsx is the drop-in replacement. | tsx |
+| Tailwind CSS | Requires PostCSS build step. | Handwritten CSS |
+| ts-node | Broken with ESM modules in Node 20+. | tsx |
+| FlexSearch 0.7.x | Older API. 0.8.x is the current npm stable (0.8.212 published). Use 0.8. | FlexSearch 0.8.212 |
+| Pagefind | Requires a build step (post-build CLI crawl of the site). Violates zero-build constraint. | FlexSearch (runtime index build) |
+| Octokit SDK for GitHub API | 50KB+ runtime overhead for 3 endpoints. The raw REST surface is documented and stable. | Native fetch + Authorization header |
+| GitHub Personal Access Token (PAT) hardcoded in JS | Exposes write access to the repository to anyone who views source. | GitHub OAuth — user authenticates and grants their own token |
+| GitHub Device Flow in browser | GitHub blocks direct device flow calls from browser JS due to CORS. A backend relay is required either way. | Cloudflare Worker OAuth Web Flow |
+| dragula.js | Abandoned since 2016, no security updates. | SortableJS 1.15.7 |
 | console.log() in MCP server | Writes to stdout, corrupts the JSON-RPC transport stream. Claude Code loses connection silently. | console.error() for all server-side logging |
 | TypeScript 6.0 beta | Pre-release as of Feb 2026. Breaking changes possible. | TypeScript 5.9.3 (latest stable) |
 | dotenv in MCP server | dotenv v17+ may print to stdout on load, which corrupts stdio transport. | Pass env vars via the `env` field in `.mcp.json` configuration |
-| SSE transport | Deprecated in Claude Code. MCP docs recommend HTTP for remote, stdio for local. SSE is legacy. | stdio for local Claude Code integration |
-| `bundler` moduleResolution | For webpack/vite workflows. Doesn't resolve the SDK's `.js` extension imports correctly in Node. | `"moduleResolution": "Node16"` |
-| CommonJS (`"type": "commonjs"`) | The MCP SDK is ESM-only; mixing CJS and ESM causes import errors. | `"type": "module"` in package.json |
-| Relative paths in .mcp.json args | Claude Code spawns the server from an arbitrary working directory; relative paths break. | Absolute path to `dist/index.js` |
 
 ## Stack Patterns by Variant
 
-**If adding HTTP/SSE transport later (future milestone):**
+**If the site moves to a build step later (e.g. v3.0):**
+- Replace FlexSearch runtime indexing with Pagefind (better performance for large doc sets)
+- This is a pure swap — no architectural change needed
+- Keep SortableJS, Cloudflare Worker, GitHub API patterns unchanged
+
+**If OAuth needs to be removed (e.g. public read-only mode):**
+- Drop the Cloudflare Worker entirely
+- Remove the `Authorization` header from GitHub API calls
+- GET endpoints (read file, list contents) work without auth for public repos
+- Write operations are simply unavailable without auth — that's the expected degraded behavior
+
+**If the kanban board grows beyond 200 cards:**
+- SortableJS handles this without changes
+- The GitHub API file-per-task pattern starts to show latency (200 GET requests on load)
+- At that scale, consolidate tasks into a single `kanban.json` and use a single GET
+
+**If adding HTTP/SSE transport to MCP server later:**
 - Add `express` or `Hono` to the MCP server
 - The `McpServer` class is transport-agnostic; swap `StdioServerTransport` for `NodeStreamableHTTPServerTransport` from `@modelcontextprotocol/sdk/server/http.js`
 - No new npm packages required — HTTP transport is bundled in the SDK
 - Keep tool registrations identical — transport is just the connection layer
-
-**If the site needs search (>20 docs):**
-- Add Pagefind (zero-build static search, runs as a post-build CLI)
-- This would require a GitHub Actions build step — acceptable when search becomes needed
 
 **If Zod v4 is required by SDK upgrade:**
 - Change `"zod": "^3.25.0"` to `"^4.0.0"` in package.json
@@ -275,17 +327,23 @@ function atomicWrite(targetPath: string, content: string): void {
 | marked@17.0.3 | All modern browsers | UMD build works with `<script>` tag. No IE11 support. |
 | TypeScript@5.9.3 | node@>=14.17 | No conflicts with Node 20 or 24. |
 | tsx@^4.7.0 | node@>=20, TypeScript@>=5 | Dev runner only; not needed in production. |
+| FlexSearch@0.8.212 | All modern browsers | UMD bundle via CDN. Global: `window.FlexSearch`. No IE11 support. |
+| SortableJS@1.15.7 | All modern browsers + mobile touch | Built-in touch support. No IE9 support. |
+| GitHub REST API (contents) | Any OAuth token with `repo` scope | API version `2022-11-28` is current stable. No version pinning needed for basic CRUD. |
+| Cloudflare Worker (free tier) | GitHub OAuth Web Flow | 100,000 req/day limit — sufficient for 1-2 users. Worker JS environment supports `fetch`, `crypto.randomUUID()`, `Response`. |
 
 ## Sources
 
-- [GitHub: modelcontextprotocol/typescript-sdk](https://github.com/modelcontextprotocol/typescript-sdk) — API patterns, Node.js >=20 requirement, v1.x vs v2 status (HIGH confidence — official SDK repo)
-- [GitHub: typescript-sdk/docs/server.md](https://github.com/modelcontextprotocol/typescript-sdk/blob/main/docs/server.md) — `McpServer`, `registerTool()`, `StdioServerTransport`, `inputSchema` with Zod object, import paths (HIGH confidence — official SDK docs)
-- [GitHub: typescript-sdk/releases](https://github.com/modelcontextprotocol/typescript-sdk/releases) — v1.27.0 as latest stable, v2 pre-alpha confirmation (HIGH confidence — official release page)
-- [npmjs.com: @modelcontextprotocol/sdk](https://www.npmjs.com/package/@modelcontextprotocol/sdk) — v1.26.0/1.27.0 release dates, 26,000+ downstream users (HIGH confidence)
-- [zod.dev/v4/versioning](https://zod.dev/v4/versioning) — dual subpath versioning, v4 stable since July 2025, `^3.25.0 || ^4.0.0` peer dep pattern (HIGH confidence — official Zod docs)
-- [code.claude.com/docs/en/mcp](https://code.claude.com/docs/en/mcp) — `.mcp.json` project scope format, stdio registration, `--scope project` flag, absolute path requirement (HIGH confidence — official Anthropic docs)
-- [marked npm / jsDelivr](https://www.jsdelivr.com/package/npm/marked) — v17.0.3, CDN URLs confirmed (HIGH confidence)
-- [Zod v4 stable announcement](https://zod.dev/) — v4 confirmed stable (HIGH confidence — official docs)
+- [GitHub: nextapps-de/flexsearch](https://github.com/nextapps-de/flexsearch) — v0.8.212 latest, CDN bundle URL, `window.FlexSearch` global, Document index API (MEDIUM confidence — official repo, no separate release notes reviewed)
+- [npm: flexsearch](https://www.npmjs.com/package/flexsearch) — v0.8.212 confirmed as latest published version via `npm view flexsearch version` (HIGH confidence — npm registry)
+- [GitHub REST API: repository contents](https://docs.github.com/en/rest/repos/contents) — PUT/DELETE endpoints, SHA requirement, Base64 encoding, auth scopes (HIGH confidence — official GitHub docs)
+- [Simon Willison: GitHub OAuth with Cloudflare Workers](https://til.simonwillison.net/cloudflare/workers-github-oauth) — flow architecture, localStorage polling pattern, state/CSRF pattern (MEDIUM confidence — verified practitioner, aligns with GitHub OAuth docs)
+- [GitHub: SortableJS/Sortable](https://github.com/SortableJS/Sortable) — v1.15.7 latest, `group` option for cross-list drag, CDN availability, touch support (HIGH confidence — official repo)
+- [npm: sortablejs](https://www.jsdelivr.com/package/npm/sortablejs) — v1.15.7 confirmed via `npm view sortablejs version` (HIGH confidence — npm registry)
+- [npm: fuse.js](https://www.fusejs.io/) — v7.1.0 latest, fuzzy-search characteristics, why it differs from full-text search (HIGH confidence — npm registry)
+- [Cloudflare Workers limits](https://developers.cloudflare.com/workers/platform/limits/) — 100,000 req/day free tier (HIGH confidence — official Cloudflare docs)
+- [GitHub OAuth authorizing OAuth apps](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps) — Web Flow vs Device Flow, client_secret requirement (HIGH confidence — official GitHub docs)
+- [MDN: HTML Drag and Drop API](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Kanban_board) — native DnD capabilities and limitations (HIGH confidence — MDN)
 
 ---
 *Stack research for: Keloia Docs + MCP Server*

@@ -1,18 +1,25 @@
 # Feature Research
 
-**Domain:** MCP server exposing filesystem-backed project data (docs, kanban, progress)
+**Domain:** Read-write documentation site + MCP server (v2.0 — search, auth, CRUD, interactive kanban)
 **Researched:** 2026-02-22
-**Confidence:** HIGH — MCP spec and tool design patterns verified against official protocol spec (2025-06-18) and Anthropic's reference filesystem server
+**Confidence:** MEDIUM — GitHub API behavior verified via official docs (HIGH); GitHub OAuth CORS limitation verified via community discussion (HIGH); client-side search library patterns verified via WebSearch (MEDIUM); MCP search tool patterns inferred from existing MCP tools + spec (MEDIUM)
 
 ---
 
-## Context: What "User" Means Here
+## Context: What v2.0 Adds
 
-The primary consumer of this MCP server is Claude Code, not a human. "User expects" means "Claude Code (or any LLM) expects this behavior for reliable, accurate tool use." The secondary consumer is Reza registering tools in `.mcp.json` and reading tool output in conversations.
+This file covers only **new** features for v2.0. The existing v1.1 baseline is:
 
-**Already built (not in scope):** Static site (HTML/CSS/JS SPA), GitHub Pages deploy, kanban board and progress tracker views, split-file JSON data layer (`data/docs/`, `data/kanban/`, `data/progress/`).
+- Static site: markdown rendering, read-only kanban, progress tracker
+- MCP server: 7 tools — list_docs, read_doc, get_kanban, add_task, move_task, get_progress, update_progress
 
-**In scope:** MCP server features only — what tools to build, what behaviors they must have, what naming and description patterns make LLM tool selection accurate.
+**Hard constraints that shape every v2.0 feature:**
+
+- Zero build step for site (no npm, no bundler, no transpiler for site code)
+- Vanilla HTML/CSS/JS for site only (no React, Astro, Tailwind)
+- GitHub Pages hosting (static files only — no server-side logic, no cookies with HttpOnly, no secret storage)
+- Single source of truth: `data/` directory (markdown + JSON files)
+- Primary users: Reza (developer) + Claude Code (AI tool)
 
 ---
 
@@ -20,138 +27,135 @@ The primary consumer of this MCP server is Claude Code, not a human. "User expec
 
 ### Table Stakes (Users Expect These)
 
-Features Claude Code (and any MCP-capable LLM) assumes exist in any well-formed MCP server. Missing these = tool calls fail, select the wrong tool, or produce corrupt data.
+Features users assume exist in a read-write doc site. Missing these = feature is broken or unusable.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| `list_docs` tool | LLM cannot know what docs exist without a catalog; must discover before reading | LOW | Reads `data/docs/index.json` (schemaVersion 1, `docs[]` array of `{slug, title}`). Returns slug + title pairs. Dependency: existing index.json. |
-| `read_doc` tool | Core read operation; LLM uses list to discover slug, then reads content | LOW | Reads `data/docs/{slug}.md`. Returns raw markdown as text content. Errors clearly on unknown slug with `isError: true`. Dependency: existing markdown files. |
-| `get_kanban` tool | LLM needs full board state to reason about tasks, columns, and what to do next | MEDIUM | Reads `data/kanban/index.json` + all per-task files. Returns denormalized result: `{ columns: string[], tasks: Task[] }`. One call, complete board. Dependency: existing split-file kanban data. |
-| `get_progress` tool | LLM needs milestone state to understand project phase and what's complete | MEDIUM | Reads `data/progress/index.json` + all per-milestone files. Returns milestone list with status, task counts, notes. Dependency: existing split-file progress data. |
-| `add_task` tool | Write capability; LLM must create tasks as work is identified during conversations | MEDIUM | Writes new per-task file to `data/kanban/`, updates `index.json` tasks array. Zod validates: id, title, column, description, assignee. Atomic: entity file first, then index. |
-| `move_task` tool | Moving tasks between columns is the fundamental kanban workflow action | LOW | Updates `column` field in existing task file. Validates target column exists in `index.json` columns array before writing. |
-| `update_progress` tool | Progress data that can't be updated goes stale and becomes untrustworthy | MEDIUM | Updates fields in per-milestone file. Zod validates status enum (backlog/in-progress/done) and numeric task counts. |
-| Zod input validation on all write tools | LLM tool calls must fail fast with clear messages when schema is wrong — prevents corrupt data that breaks site rendering | MEDIUM | Every write tool validates full input with Zod before touching filesystem. Returns `isError: true` with field-level detail on validation failure. |
-| Atomic writes on write tools | Partial writes corrupt the split-file data layer — site renders broken state | MEDIUM | Write entity file first, update index second. On index failure, log but do not revert entity file — orphaned entity file is safe; orphaned index entry is broken. |
-| `isError: true` on tool failures | MCP spec defines two error tiers; returning errors as success confuses LLM and breaks retry logic | LOW | All tool handlers wrap execution in try/catch. Filesystem errors, invalid slugs, validation failures all return `isError: true` with descriptive text content. Protocol errors (unknown tool, malformed request) handled by SDK automatically. |
-| snake_case tool names | LLM tokenization (GPT-4o, Claude) performs best with snake_case; inconsistent casing signals poor quality; convention in all MCP reference servers | LOW | All 7 tools: `list_docs`, `read_doc`, `get_kanban`, `get_progress`, `add_task`, `move_task`, `update_progress`. |
-| Verb-first tool names | MCP convention; name communicates the action not the subject | LOW | Names follow `verb_noun`: `list_docs`, `read_doc`, `get_kanban`, `add_task`, `move_task`, `update_progress`, `get_progress`. |
-| Precise parameter descriptions in inputSchema | LLM reads parameter `description` fields to form correct call arguments — vague descriptions cause wrong values | LOW | Every parameter has a description: type, format, valid values, and constraints. Example: `column` on `add_task` — "Must match one of the column names in the kanban index (e.g., 'Backlog', 'In Progress', 'Done')." |
-| Action-first tool descriptions | Tool `description` field is how LLM decides which tool to call; vague or noun-first descriptions cause misselection | LOW | Each description leads with an imperative verb and states what the tool returns. Example: "List all documentation files available in the project. Returns slug and title for each doc. Call this before read_doc to discover valid slugs." |
-| stdio transport | Claude Code uses stdio MCP registration; HTTP transport is out of scope for v1.1 | LOW | Server speaks stdio via `@modelcontextprotocol/sdk`. Launched via `node dist/index.js`. `.mcp.json` in repo root handles registration. |
-| `.mcp.json` project-scope config | Claude Code discovers MCP servers via project-scoped `.mcp.json` — without this file the server is never loaded | LOW | File at repo root: `{ "mcpServers": { "keloia": { "type": "stdio", "command": "node", "args": ["mcp-server/dist/index.js"] } } }`. |
+| Search box with results + snippets | Any doc site over 5 pages needs search; users never accept "use Ctrl+F" | MEDIUM | Client-side full-text search with no backend; index built from fetched markdown at page load; display matching line snippets under results |
+| Search results while typing (debounced) | Modern search UX expectation; batch-submit feels broken | LOW | Debounce input ~300ms to avoid re-indexing on every keystroke; search the in-memory index, not re-fetch files |
+| Markdown editor for doc editing | Edit must show what the user is editing; raw textarea with markdown is the minimum acceptable | MEDIUM | Textarea with markdown input; preview toggle optional but not required for MVP; must submit via GitHub API |
+| Login / logout state visible in UI | Auth without visible state leaves user confused about whether they are logged in | LOW | Show GitHub avatar + username when authenticated; show "Login with GitHub" when not; token stored in localStorage (no alternative on static site) |
+| Write operations gated behind auth | Users expect "edit" buttons to require login — unhidden edit controls on unauthenticated state feel broken | LOW | Edit/delete/drag controls hidden or disabled when unauthenticated; show login prompt on click |
+| Confirmation before destructive actions | Delete doc, delete task: users expect a "are you sure?" modal | LOW | Simple confirm modal with document title / task title in message; cancel + confirm buttons |
+| Drag-and-drop kanban columns | Once kanban is visible, users expect cards to be draggable (static board is perceived as broken in 2026) | MEDIUM | HTML5 Drag and Drop API; draggable cards, droppable column zones; persist column change via existing move_task data write (or GitHub API for site) |
+| MCP `search_docs` tool | Claude Code cannot do keyword search without it; `list_docs` + `read_doc` reads all files sequentially — acceptable at 5 docs, awkward at 20+ | MEDIUM | Already deferred from v1.1 ("moved to v2.0" per PROJECT.md) |
+| MCP tools for doc CRUD | Symmetric with site CRUD; if human can edit docs via site, Claude Code should also be able to via MCP | MEDIUM | add_doc, edit_doc, delete_doc tools writing directly to `data/docs/` — no GitHub API needed since MCP runs locally against the filesystem |
+| MCP setup guide page | Tool is useless until configured; users expect a dedicated "how to set this up" page per IDE | LOW | Static markdown page or inline HTML; cover Cursor, Claude Code, Windsurf — all use JSON config but with different file locations |
 
 ### Differentiators (Competitive Advantage)
 
-Features that make this MCP server more useful than a generic filesystem server for this project.
+Features that go beyond the baseline and reinforce the core value proposition of "humans and AI share the same live data layer."
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Denormalized kanban response | Generic filesystem tools return raw JSON; this tool assembles the full board state (columns + all task objects) in one call — LLM never needs to read index then loop over task files manually | MEDIUM | `get_kanban` reads index then reads all N task files. Returns `{ columns: string[], tasks: Task[] }`. Dependency: split-file kanban data (already built). |
-| Column filter on `get_kanban` | LLM can request "show me only In Progress tasks" without loading the full board — reduces tokens on large boards | LOW | Optional `column` param filters tasks array before return. Validate against known columns from index; return error if column unknown. |
-| Assignee filter on `get_kanban` | LLM can scope to tasks for one person in multi-assignee projects | LOW | Optional `assignee` param. Simple string equality match on task's assignee field. Null-safe: tasks with null assignee never match. |
-| Computed `percentComplete` on `get_progress` | Returns `percentComplete` derived from `tasksCompleted / tasksTotal` — LLM gets ready-to-use number instead of computing it from raw fields | LOW | `Math.round((tasksCompleted / tasksTotal) * 100)`. Guard against division by zero (return 0 when total is 0). |
-| Domain-specific tool names over generic filesystem names | `read_doc` is unambiguous to LLM; `read_file` with a path parameter requires LLM to know the correct path, which is fragile | LOW | Opinionated naming for this domain. Generic filesystem server is wrong tool here — path knowledge should not live in LLM prompts. |
-| Human-readable validation error messages on write failures | When `add_task` fails because column doesn't exist, error message names the valid columns — LLM can self-correct without user intervention | LOW | Error text template: "Column '{value}' not found. Valid columns are: Backlog, In Progress, Done." Generate from actual index data, not hardcoded list. |
-| Schema version assertion on reads | If data files change schema, tool fails informatively rather than returning malformed data silently | LOW | Read `schemaVersion` from index files. If not `1`, return `isError: true` with message: "Unsupported schemaVersion: {n}. Expected 1." |
+| Search that covers both site and MCP via same index | Same `data/docs/` source means site search and MCP search are always in sync — no dual-indexing | LOW | MCP search_docs reads files at call time; site search indexes at page load; both operate on the same markdown files. Sync is structural, not a build step |
+| MCP doc CRUD writes directly to filesystem | MCP running locally writes to `data/docs/` directly — no GitHub API, no token storage, no CORS problem; changes are immediately visible to git push and site deploy | MEDIUM | Bypasses auth entirely for MCP path. Write entity file (slug.md), update `data/docs/index.json`. Same atomic pattern as kanban writes |
+| Drag-and-drop saves without page reload | SPA already; save state update + visual column change in one interaction = instant feedback | LOW | On drop: update DOM immediately (optimistic), then write to data (via existing site write path). Revert on error |
+| Search with regex/filter support in MCP | MCP tool is used by LLMs, not humans; regex support lets Claude Code do targeted queries like "find all docs mentioning 'v2.0'" | LOW | `search_docs` accepts optional `query` (substring/regex) and optional `slug` filter; matches against file content loaded in memory at call time |
+| Per-IDE MCP setup guide with copy-paste config | Generic MCP docs make users adapt instructions; per-IDE blocks with exact JSON configs reduce setup friction to near-zero | LOW | Three tabbed or sectioned blocks: Cursor (`.cursor/mcp.json`), Claude Code (`.mcp.json` in project root), Windsurf (`~/.codeium/windsurf/mcp_config.json`) |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
+Features that seem natural here but create problems given the constraints.
+
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Generic `read_file` / `write_file` passthrough | Seems flexible; one tool covers everything | LLM constructs arbitrary paths, bypasses validation, corrupts data layer, reads unintended files (credentials, config) | Domain-specific tools with paths baked in. `read_doc` knows to look in `data/docs/`. Path is not an LLM concern. |
-| `delete_task` tool | Logical complement to `add_task`; seems necessary for task lifecycle | Deletes are hard to recover in a no-undo filesystem system; LLM hallucinations could silently destroy data | `move_task` to Done column is the workflow signal for completed work. Delete is an admin operation the human does in an editor. |
-| `create_doc` / `update_doc` write tools | Symmetric with read tools; LLM could maintain docs autonomously | Markdown files are the human developer's artifact; LLM writing markdown risks overwriting intentional prose and structure | Human edits docs directly. MCP server is read-only for docs (human-owned content), read-write only for structured kanban/progress data (machine-managed). |
-| `search_docs` / full-text search | Useful for large doc sets | Adds complexity for a 2-doc corpus; out of scope per PROJECT.md ("add when >20 docs justify it") | `list_docs` + `read_doc` covers the current corpus. LLM can read all docs in two calls. |
-| Batch write tools (e.g., `bulk_add_tasks`) | Seems efficient for creating multiple tasks | Atomicity complexity multiplies; partial batch failure is hard to report clearly; retry logic becomes complex | Single `add_task` per call. LLM calls it multiple times. Simple, predictable, easy to retry. |
-| Caching / in-memory state | Faster reads on repeated calls | Reads are always fresh off disk — no caching means no staleness problem; single-user local server has no concurrent access issue | Read files on every tool call. For this scale (< 100 tasks, 5 milestones), file I/O is negligible. |
-| Real-time file watching / push notifications | Interesting capability; keeps LLM in sync with human edits | Requires persistent server state; stdio transport is request-response only; `listChanged` notification not needed for single-user local setup | Fresh reads on every call. |
-| Authentication / access control on tools | Correct for multi-user or remote scenarios | Local stdio server for one developer; auth adds configuration complexity with zero security benefit | Project repo visibility controls access at the source. |
+| GitHub OAuth web flow with client secret on static site | Seems like the "right" auth pattern | GitHub's token exchange endpoint (`/login/oauth/access_token`) has no CORS headers — a browser fetch to it gets blocked. Client secret cannot be stored on a static site. This pattern is fundamentally broken without a backend. | GitHub Device Flow (requires user to visit `github.com/login/device` and enter a code) or PAT entry (user pastes a token they generated manually). Both work without a backend. Device Flow has no CORS issue because the token polling is to the API endpoint, not the auth endpoint — but as of 2026 GitHub still requires CORS-safe polling. PAT entry is simpler and sufficient for a 1-2 user tool. |
+| Markdown live preview side-by-side editor | Nice UX for editing | Adds significant DOM management; split-pane CSS in vanilla JS is non-trivial; out of scope for a developer-only tool where the user knows markdown | Simple textarea + separate "Preview" toggle tab. Same content, switched view. |
+| Full search engine with relevance ranking (TF-IDF, BM25) | Makes search feel more powerful | Overkill for <20 docs. TF-IDF libraries (lunr.js, flexsearch) add CDN dependency; the zero-dependency constraint on the site is absolute. | Simple substring match over loaded markdown text. Case-insensitive `String.includes()` or `indexOf()` on file content fetched at page load. No library needed. |
+| Server-side search (Algolia, Pagefind, etc.) | Production search quality | All options require either a build step (Pagefind), a third-party account (Algolia), or a backend process. All three violate constraints. | Client-side substring search. Sufficient for the corpus size. |
+| JWT session tokens with expiry + refresh | Correct for a real auth system | No server to issue or validate JWTs. localStorage token is already a session — it expires when manually cleared. Refresh logic has no server to refresh against. | Store GitHub token (PAT or Device Flow token) in localStorage. Treat it as valid until GitHub returns 401, then prompt re-login. |
+| Delete column on kanban | Logical CRUD | Destroys task history; tasks without a valid column break `get_kanban` and `move_task`. Column set is intentionally small and stable. | Admin edits column list directly in `data/kanban/index.json`. Not a UI operation. |
+| Real-time collaborative editing | Multiple users editing the same doc simultaneously | No WebSocket, no persistent server, GitHub Pages is static. Shared write access would require last-write-wins via SHA update which GitHub API enforces — concurrent edits to the same file will fail with a SHA conflict. | Sequential editing is fine for a 1-2 user tool. SHA conflict on GitHub API returns 409 — surface this as a clear error ("file was changed by someone else, reload and retry"). |
+| WYSIWYG editor (contenteditable / rich text) | "Better" editing experience | Cannot be built without a build step if using a library; contenteditable from scratch is a significant engineering effort. Markdown textarea is the correct tool here — developer users know markdown. | Markdown textarea. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-list_docs
-    └── reads ──> data/docs/index.json  [ALREADY BUILT: schemaVersion 1, docs[] array]
+[GitHub Auth (PAT or Device Flow)]
+    └──enables──> [Doc CRUD on site (add, edit, delete)]
+    └──enables──> [Interactive kanban save (drag + persist)]
+    └──NOT required for──> [MCP doc CRUD] (MCP runs locally, writes filesystem directly)
+    └──NOT required for──> [Site search] (read-only, no auth needed)
+    └──NOT required for──> [MCP search_docs] (read-only, no auth needed)
 
-read_doc
-    └── reads ──> data/docs/{slug}.md  [ALREADY BUILT]
-    └── slug discovery via ──> list_docs  (call list_docs first; read_doc itself doesn't need list_docs at call time)
+[Doc CRUD on site]
+    └──requires──> [GitHub API file contents endpoint]
+                       └──requires──> [SHA fetch before every update/delete]
+                       └──requires──> [Base64 encode/decode of file content]
+    └──requires──> [data/docs/index.json update] on add/delete
+    └──enhances──> [Site search] (new docs immediately searchable after add)
 
-get_kanban
-    └── reads ──> data/kanban/index.json  [ALREADY BUILT: columns[], tasks[] array of IDs]
-    └── reads ──> data/kanban/task-{id}.json x N  [ALREADY BUILT: id, title, column, description, assignee]
+[Site full-text search]
+    └──requires──> [data/docs/index.json] to enumerate files
+    └──requires──> [Fetch all doc files at page load] to build in-memory corpus
+    └──NOT requires──> [Auth] (read-only)
+    └──NOT requires──> [Any library] (substring match is sufficient)
 
-add_task
-    └── writes ──> data/kanban/task-{id}.json  (new file)
-    └── updates ──> data/kanban/index.json  tasks[] array
-    └── validates column against ──> index.json columns[]  (read at call time, not startup)
-    └── requires ──> atomic write pattern  (entity file first, then index)
+[MCP search_docs]
+    └──requires──> [Existing list_docs / read_doc infrastructure]
+    └──NOT requires──> [Auth] (MCP runs locally, filesystem access)
+    └──enhances──> [MCP doc CRUD] (find docs before editing)
 
-move_task
-    └── reads + updates ──> data/kanban/task-{id}.json
-    └── reads ──> data/kanban/index.json  (to validate target column)
-    └── task must exist ──> created by add_task or pre-existing seed data
+[MCP doc CRUD (add_doc, edit_doc, delete_doc)]
+    └──requires──> [data/docs/index.json update] on add/delete (same atomic pattern as add_task)
+    └──requires──> [Zod validation] on inputs (same pattern as add_task / update_progress)
+    └──NOT requires──> [GitHub API] (MCP writes directly to filesystem)
+    └──NOT requires──> [Auth] (MCP is local; filesystem access = access)
 
-get_progress
-    └── reads ──> data/progress/index.json  [ALREADY BUILT: milestones[] array of IDs]
-    └── reads ──> data/progress/milestone-{id}.json x N  [ALREADY BUILT: id, phase, title, status, tasksTotal, tasksCompleted, notes]
+[Interactive kanban drag-and-drop]
+    └──requires──> [Auth] to persist column changes (write gate)
+    └──requires──> [HTML5 Drag and Drop API] (no library)
+    └──uses──> [existing move_task data write path on site] to save on drop
+    └──enhances──> existing static kanban view (replaces read-only board)
 
-update_progress
-    └── reads + updates ──> data/progress/milestone-{id}.json
-    └── milestone must exist ──> pre-existing in data layer
-
-Zod validation ──enhances──> add_task, move_task, update_progress  (all write tools)
-
-.mcp.json ──enables──> ALL tools  (server discovery by Claude Code)
+[MCP setup guide page]
+    └──requires──> NOTHING — static content
+    └──NOT requires──> [Auth]
+    └──NOT requires──> [Any new data file]
 ```
 
 ### Dependency Notes
 
-- **`add_task` reads index at call time to validate column:** Not at server startup. Column list is live from the file, so future schema changes are picked up automatically.
-- **Atomic write order is critical:** Entity file before index. An orphaned entity file (file exists, not in index) is harmless — `get_kanban` only fetches indexed task IDs. An orphaned index entry (in index, no file) causes every subsequent `get_kanban` call to error on that task's file read.
-- **`move_task` and `update_progress` have soft dependencies on seed data:** Seed tasks and milestones already exist in the data layer. These tools don't need `add_task` to run first in practice.
-- **`.mcp.json` is a prerequisite for all tools:** Without it, Claude Code never starts the server. It is the entry point for every feature.
-- **All read tools read fresh from disk:** No initialization step, no in-memory state. Server startup is just SDK initialization and tool registration.
+- **Auth is NOT required for search or MCP features.** The gate is specifically for site write operations (doc CRUD, kanban saves).
+- **MCP doc CRUD bypasses auth entirely.** The MCP server runs locally and writes to the filesystem directly. No GitHub API call, no token. This is intentional and correct for a local developer tool.
+- **SHA is a required parameter for GitHub API update and delete.** Every edit/delete flow on the site must first GET the file to retrieve its current SHA, then include that SHA in the PUT/DELETE. Forgetting SHA = 422 Unprocessable Entity error. This is a non-negotiable workflow step.
+- **Drag-and-drop on kanban needs the same write path as manual task moves.** On static site, "saving" a drag means calling the same data write used for add_task/move_task. This path should be extracted as a shared utility before building drag-and-drop.
+- **search_docs and site search use the same source files, but different mechanisms.** Site search fetches markdown via HTTP and indexes in the browser. MCP search reads markdown via `fs.readFileSync` on the local filesystem. They converge on the same content, with no sync required.
 
 ---
 
 ## MVP Definition
 
-### Launch With (v1.1 — Current Milestone)
+### Launch With (v2.0)
 
-Minimum to make the MCP server useful for daily Claude Code usage on this project.
+All features listed in PROJECT.md v2.0 goal are the MVP. No further trimming is needed — the scope is already narrowly defined for a 1-2 user developer tool.
 
-- [ ] `list_docs` — Without it, LLM must guess doc slugs or ask user; defeats the purpose of MCP
-- [ ] `read_doc` — Core reason to have MCP access to docs at all
-- [ ] `get_kanban` — LLM needs full board state to participate in task planning
-- [ ] `get_progress` — LLM needs milestone state to understand project phase
-- [ ] `add_task` with Zod validation — Write capability; LLM can capture new work items during conversations
-- [ ] `move_task` with column validation — Write capability; LLM can update board state as work completes
-- [ ] `update_progress` with Zod validation — Write capability; LLM can update milestone tracking
-- [ ] Atomic write pattern on all write tools — Data integrity is non-negotiable; the site renders this data
-- [ ] `isError: true` error handling — All tool failures reported correctly per MCP spec
-- [ ] `.mcp.json` project-scope registration — Server must be discoverable by Claude Code
+- [ ] **Site full-text search** — Sidebar search box, in-memory index at page load, results with snippets. Table stakes for any doc site.
+- [ ] **MCP `search_docs` tool** — Keyword/regex search across docs. Already deferred from v1.1, users will notice the gap.
+- [ ] **MCP setup guide page** — Static page with per-IDE config blocks for Cursor, Claude Code, Windsurf. Zero risk, high value.
+- [ ] **GitHub Auth (PAT entry or Device Flow)** — Gate for all site write operations. Choose PAT entry first (simpler, no CORS issue, sufficient for 1-2 users).
+- [ ] **Doc CRUD on site** — Add (new markdown file via GitHub API), edit (textarea + PUT with SHA), delete (DELETE with SHA + confirm modal).
+- [ ] **MCP doc CRUD tools** — add_doc, edit_doc, delete_doc. Symmetric with site; writes directly to filesystem.
+- [ ] **Interactive kanban drag-and-drop** — Replace static board; drag card to new column, persist on drop, confirmation modal for moves, gated behind auth.
 
-### Add After Validation (v1.x)
+### Add After Validation (v2.x)
 
 Add when daily usage reveals the gap.
 
-- [ ] Column filter on `get_kanban` — Add when board exceeds ~10 tasks and full board response feels excessive
-- [ ] Assignee filter on `get_kanban` — Add when project has more than one assignee
-- [ ] Computed `percentComplete` on `get_progress` — Add when LLM is observed computing this manually
-- [ ] Schema version assertion on reads — Add when a schema migration actually creates the risk
+- [ ] **Markdown preview toggle on doc edit** — Add when editing raw markdown proves friction for non-trivial docs.
+- [ ] **Search filter by doc slug/title** — Add when corpus exceeds ~15 docs and results become noisy.
+- [ ] **SHA conflict error with clear user message** — Add the first time a real 409 occurs in practice.
 
-### Future Consideration (v2+)
+### Future Consideration (v3+)
 
-Defer until a clear need emerges from actual usage.
+Defer until a clear need emerges.
 
-- [ ] HTTP/SSE transport — Add when remote Claude access is needed; PROJECT.md explicitly defers this
-- [ ] `search_docs` — Add when doc count exceeds 20 (PROJECT.md threshold)
-- [ ] Output schemas (`outputSchema`) on read tools — Optional MCP 2025-06-18 feature; useful for typed clients but not needed for stdio Claude Code usage
-- [ ] `docs://` MCP resource template — Parallel access pattern for non-tool MCP clients; add when a second client type is needed
+- [ ] **HTTP/SSE transport for MCP server** — Enables remote Claude Code access. Out of scope per PROJECT.md until needed.
+- [ ] **Real-time search index updates** — Update index on doc add/delete without full page reload. Only needed if doc churn is high.
+- [ ] **OAuth web flow with a minimal backend** — Consider if Device Flow proves confusing for new users. Requires a tiny proxy (Cloudflare Worker or similar).
 
 ---
 
@@ -159,104 +163,201 @@ Defer until a clear need emerges from actual usage.
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| `list_docs` | HIGH | LOW | P1 |
-| `read_doc` | HIGH | LOW | P1 |
-| `get_kanban` (full denormalized board) | HIGH | LOW | P1 |
-| `get_progress` (full milestones) | HIGH | LOW | P1 |
-| `add_task` with Zod validation | HIGH | MEDIUM | P1 |
-| `move_task` with column validation | HIGH | LOW | P1 |
-| `update_progress` with Zod validation | HIGH | MEDIUM | P1 |
-| Atomic write pattern | HIGH | MEDIUM | P1 |
-| `.mcp.json` config | HIGH | LOW | P1 |
-| `isError: true` error handling | HIGH | LOW | P1 |
-| Action-first tool descriptions | HIGH | LOW | P1 — quality of strings only, zero implementation cost |
-| Precise parameter descriptions | HIGH | LOW | P1 — quality of strings only |
-| Column filter on `get_kanban` | MEDIUM | LOW | P2 |
-| Human-readable validation error messages | MEDIUM | LOW | P2 |
-| Computed `percentComplete` | LOW | LOW | P2 |
-| Schema version assertion | LOW | LOW | P2 |
-| Assignee filter on `get_kanban` | LOW | LOW | P3 |
-| HTTP/SSE transport | LOW | HIGH | P3 |
-| `search_docs` | LOW | MEDIUM | P3 |
-| `outputSchema` on read tools | LOW | LOW | P3 |
+| MCP setup guide page | HIGH | LOW | P1 — pure content, no risk |
+| Site full-text search | HIGH | MEDIUM | P1 — table stakes |
+| MCP `search_docs` tool | HIGH | LOW | P1 — builds on existing list_docs/read_doc |
+| GitHub Auth (PAT entry) | HIGH | LOW | P1 — enables all write ops; PAT simpler than Device Flow |
+| MCP doc CRUD (add_doc, edit_doc, delete_doc) | HIGH | MEDIUM | P1 — extends existing write tool pattern |
+| Doc CRUD on site | HIGH | HIGH | P1 — GitHub API SHA dance + markdown editor + auth gate |
+| Interactive kanban drag-and-drop | MEDIUM | MEDIUM | P1 — described in v2.0 goals; replaces static board |
+| Markdown preview toggle | LOW | MEDIUM | P2 |
+| Device Flow auth | LOW | HIGH | P3 — PAT is sufficient; Device Flow adds complexity for minimal gain |
 
 **Priority key:**
-- P1: Must have for v1.1 launch
-- P2: Should have, add in v1.x when gap appears
-- P3: Nice to have, v2+ consideration
+- P1: Must have for v2.0 launch
+- P2: Should have, add in v2.x when gap appears
+- P3: Nice to have, v3+ consideration
 
 ---
 
-## MCP Tool Design Reference
+## Implementation Behavior Reference
 
-Findings from the official MCP spec and reference implementations that directly apply to this project's tool implementations.
+Detailed expected behaviors for each v2.0 feature, for use in phase planning.
 
-### Naming convention (HIGH confidence — official spec + reference servers)
-Use `verb_noun` snake_case. The official Anthropic filesystem server uses: `read_file`, `write_file`, `list_directory`, `move_file`, `create_directory`. This project follows the same pattern: `list_docs`, `read_doc`, `get_kanban`, `add_task`, `move_task`, `update_progress`, `get_progress`.
+### GitHub Auth: PAT Entry (Recommended)
 
-### Tool description pattern (HIGH confidence — official tutorial + SEP-1382)
-1-2 sentences. Lead with imperative verb. State what the tool returns. Include when to use it (especially in relation to other tools). Example:
+**How it works:**
+
+1. User clicks "Login" in sidebar
+2. Modal prompts for a GitHub Personal Access Token (PAT) with `repo` scope
+3. Site calls `GET /user` on GitHub API with the token to verify it is valid and retrieve username + avatar
+4. On success: token stored in `localStorage`, avatar + username shown in sidebar, write controls revealed
+5. On failure: clear error message ("Token invalid or missing repo scope")
+6. "Logout" clears `localStorage` and hides write controls
+
+**Required token scope:** `repo` (to read/write file contents in the repository)
+
+**Why PAT over Device Flow:** Device Flow requires user to open `github.com/login/device` in a separate tab and enter a user code. Adds 2 extra steps with no security benefit for a 1-2 user private tool. PAT entry is 1 step: paste token, done.
+
+**Why PAT over OAuth web flow:** GitHub's `/login/oauth/access_token` token exchange endpoint does not support CORS. A browser fetch to it is blocked. No workaround exists without a backend. PKCE support was added by GitHub (July 2025) but the CORS restriction on the token endpoint was not resolved at time of research. Device Flow also still requires CORS-safe polling that GitHub has not confirmed as available.
+
+**Security note:** PAT in localStorage is visible to JavaScript. Acceptable for a developer-only tool on a trusted machine. Not acceptable for a public-facing consumer app.
+
+### GitHub API: Doc CRUD
+
+**Create doc (add):**
+
+1. Validate slug (no spaces, no special chars, `.md` extension not needed in slug)
+2. Build content string (markdown textarea value)
+3. Base64 encode content (`btoa(unescape(encodeURIComponent(content)))` for Unicode safety)
+4. `PUT /repos/{owner}/{repo}/contents/data/docs/{slug}.md` with `{ message, content }` (no SHA needed for new file)
+5. On success: update in-memory doc list, update sidebar nav, re-index search corpus
+6. On conflict (file already exists): GitHub returns 422 — surface as "A doc with that slug already exists"
+
+**Update doc (edit):**
+
+1. Fetch current file: `GET /repos/{owner}/{repo}/contents/data/docs/{slug}.md`
+2. Extract `sha` from response (required for update)
+3. Show current content in textarea (`atob(response.content)` decoded from Base64)
+4. User edits and submits
+5. `PUT /repos/{owner}/{repo}/contents/data/docs/{slug}.md` with `{ message, content, sha }`
+6. On 409 conflict (SHA stale — someone else updated the file): surface error "File changed since you opened it. Reload and retry."
+
+**Delete doc:**
+
+1. Confirm modal: "Delete [title]? This cannot be undone."
+2. Fetch current file to get SHA
+3. `DELETE /repos/{owner}/{repo}/contents/data/docs/{slug}.md` with `{ message, sha }`
+4. Update `data/docs/index.json` — remove entry (requires second PUT with index file's SHA)
+5. On success: remove from sidebar, re-index search corpus
+
+**SHA rule (HIGH confidence — official GitHub REST API docs):** SHA is mandatory on update and delete. It is the mechanism GitHub uses for optimistic concurrency control — it ensures you are replacing the exact version you read. There is no way to bypass this requirement.
+
+### Site Full-Text Search
+
+**Expected UX:**
+
+1. Search box in sidebar (always visible)
+2. User types query (minimum 2 characters)
+3. After 300ms debounce: search in-memory corpus
+4. Results: matching doc titles + a 1-2 line snippet of the matching content (context around the match)
+5. Click result → navigate to that doc
+6. Empty query or <2 chars → hide results panel, show normal sidebar
+
+**Implementation approach (no library):**
+
+- At page load: fetch all docs listed in `data/docs/index.json`, store `{ slug, title, content }` array in memory
+- Search: `corpus.filter(doc => doc.content.toLowerCase().includes(query.toLowerCase()))`
+- Snippet: find the index of the match in content, extract ~100 chars before and after, add ellipsis
+- No library needed for this corpus size (<20 docs). FlexSearch/MiniSearch are overkill and violate the zero-dependency site constraint.
+
+**Limitation:** Index is stale if docs are added/deleted during the same session (without a reload). Mitigate by re-indexing after any doc CRUD operation completes.
+
+### MCP `search_docs` Tool
+
+**Expected behavior:**
 
 ```
-"List all documentation files available in the project. Returns slug and title for each doc.
- Call this before read_doc to discover valid slugs."
+search_docs(query: string, slug?: string) → { matches: [{ slug, title, snippet, lineNumber }] }
 ```
 
-AI agents may not read the full description if it is long — put the most critical information first.
+- `query`: substring or regex string
+- `slug`: optional — if provided, search only that doc; otherwise search all docs
+- Match: try as regex first (`new RegExp(query, 'i')`), fall back to case-insensitive substring if regex invalid
+- Snippet: 1-2 lines of context around the match
+- Returns empty array (not error) if no matches found
+- Returns `isError: true` if slug provided but file does not exist
 
-### Parameter description pattern (HIGH confidence — official tutorial)
-State the type, format, valid values, and constraints. For closed-set values, enumerate examples. Example for the `column` parameter on `add_task`:
+**Why regex support:** LLMs (Claude Code) benefit from precise pattern matching — e.g., "find all headings mentioning 'milestone'" → `^## .*milestone`. Natural language callers can use plain strings; regex is opt-in via the same field.
+
+### Interactive Kanban Drag-and-Drop
+
+**Expected UX:**
+
+1. Cards have `draggable="true"` attribute
+2. User drags card from one column to another
+3. On drop: confirmation modal — "Move '[task title]' to [column name]?"
+4. Confirm → update column in data, update DOM
+5. Cancel → return card to original column (no DOM change)
+6. Drag-and-drop controls are hidden (or cards are `draggable="false"`) when not authenticated
+
+**Implementation (HTML5 Drag and Drop API — no library):**
+
+- `dragstart` on card: store task ID in `event.dataTransfer.setData('text/plain', taskId)`
+- `dragover` on column: `event.preventDefault()` to allow drop
+- `drop` on column: retrieve task ID, get column name, show confirmation modal
+- On confirm: call existing data write path (update task file's column field, update index if needed), then update DOM
+
+**Data persistence for site:** Unlike MCP (filesystem write), site kanban saves go through the GitHub API (same as doc edits). Move = fetch task file → get SHA → PUT with updated column field. This is the same SHA dance as doc edit.
+
+**Constraint:** Auth required. Unauthenticated users see the board but cannot drag.
+
+### MCP Doc CRUD Tools
+
+**add_doc:**
 
 ```
-"The column to place the task in. Must match an existing column name in the kanban
- index (e.g., 'Backlog', 'In Progress', 'Done')."
+add_doc(slug: string, title: string, content: string) → success message with file path
 ```
 
-### Error handling pattern (HIGH confidence — official MCP spec 2025-06-18)
-Two tiers:
-1. **Protocol errors** (JSON-RPC level): Unknown tool names, malformed requests. Handled automatically by the MCP SDK. Do not manually produce these.
-2. **Execution errors** (`isError: true` in tool result): Business logic failures — unknown slug, invalid column, validation failure, file not found. These are the errors tool implementations produce.
+- Validate slug (no slashes, no `.md` extension in param — tool appends it)
+- Check file does not already exist (avoid silent overwrite)
+- Write `data/docs/{slug}.md` with content
+- Update `data/docs/index.json` — append `{ slug, title }` to docs array
+- Atomic: write file first, then update index
 
-```typescript
-return {
-  content: [{ type: "text", text: "Column 'Sprint' not found. Valid columns are: Backlog, In Progress, Done." }],
-  isError: true
-};
+**edit_doc:**
+
+```
+edit_doc(slug: string, content: string, message?: string) → success message
 ```
 
-### Atomic write pattern for split-file data (HIGH confidence — derived from data layer design)
+- Validate slug exists
+- Overwrite `data/docs/{slug}.md` with new content
+- No index update needed (slug and title unchanged)
+- Optional: accept `title` param to update the index entry's title field
+
+**delete_doc:**
+
 ```
-1. Validate input with Zod — fail early, no filesystem changes yet
-2. Derive output path from validated input
-3. Write entity file (data/kanban/task-{id}.json or data/progress/milestone-{id}.json)
-4. Read current index.json
-5. Update the index array in memory
-6. Write updated index.json
-7. Return success content
+delete_doc(slug: string) → success message
 ```
 
-On step 6 failure: entity file exists without index entry. This is the safe failure mode — `get_kanban` only fetches tasks listed in the index. The inverse (index updated, no entity file) causes every subsequent board read to error.
+- Validate slug exists
+- Delete `data/docs/{slug}.md`
+- Update `data/docs/index.json` — remove entry from docs array
+- Atomic: update index first (remove entry), then delete file — inverse of add_doc order; ensures index never points to a deleted file
 
-### Tool response content type (HIGH confidence — official MCP spec 2025-06-18)
-Return structured data as a JSON string in a `text` content block for backwards compatibility. Optionally also populate `structuredContent` for typed clients. For this project's v1.1, text content is sufficient.
+### MCP Setup Guide Page
 
-```typescript
-return {
-  content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
-};
-```
+**Content required per IDE:**
+
+| IDE | Config file location | Config format | Restart required? |
+|-----|---------------------|---------------|-------------------|
+| Claude Code | `.mcp.json` in project root | `{ "mcpServers": { "keloia": { "type": "stdio", "command": "node", "args": ["mcp-server/dist/index.js"] } } }` | No — per-project scope auto-loads |
+| Cursor | `.cursor/mcp.json` in project root | Same JSON structure | Yes — restart Cursor |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` (global) | Same JSON structure | Yes — restart Windsurf |
+
+**Page structure:**
+
+1. Prerequisites section (Node.js installed, repo cloned, `npm install && npm run build` in `mcp-server/`)
+2. Per-IDE tabbed or sectioned blocks with copy-paste JSON config
+3. Verification step ("Ask Claude: 'List the docs in this project'")
+4. Troubleshooting section (common failures: wrong working directory, server not built, stale config)
 
 ---
 
 ## Sources
 
-- [MCP Specification 2025-06-18: Tools](https://modelcontextprotocol.io/specification/2025-06-18/server/tools) — official protocol; tool data types, error handling, two-tier error model (HIGH confidence)
-- [Anthropic Reference Filesystem MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem) — canonical tool naming, description, and parameter patterns (HIGH confidence)
-- [Writing Effective MCP Tools — official tutorial](https://modelcontextprotocol.info/docs/tutorials/writing-effective-tools/) — naming, description structure, parameter design, error message patterns (HIGH confidence)
-- [SEP-1382: Documentation Best Practices for MCP Tools](https://github.com/modelcontextprotocol/modelcontextprotocol/issues/1382) — separation of tool description (selection) from parameter description (invocation) (MEDIUM confidence — community proposal, not ratified spec)
-- [MCP Server Naming Conventions](https://zazencodes.com/blog/mcp-server-naming-conventions) — snake_case convention, verb-noun pattern, LLM tokenization rationale (MEDIUM confidence — community source, consistent with official patterns)
-- [MCP Tool Descriptions Best Practices — Merge Dev](https://www.merge.dev/blog/mcp-tool-description) — 1-2 sentence descriptions, action-first pattern (MEDIUM confidence — practitioner source)
+- [GitHub REST API: Repository Contents](https://docs.github.com/en/rest/repos/contents) — SHA requirement for update/delete, Base64 encoding, endpoint structure (HIGH confidence)
+- [GitHub OAuth CORS issue — persistent as of 2025](https://github.com/isaacs/github/issues/330) — token exchange endpoint does not support CORS (HIGH confidence)
+- [GitHub PKCE support announcement + CORS status](https://github.com/orgs/community/discussions/15752) — PKCE added July 2025 but CORS on token endpoint still unresolved (HIGH confidence)
+- [GitHub Device Flow in browser — requires backend](https://www.zonca.dev/posts/2025-01-29-github-auth-browser-device-flow) — confirmed: GitHub blocks direct device flow calls from browser (MEDIUM confidence — third-party article, consistent with GitHub docs)
+- [MDN: Kanban board with HTML Drag and Drop API](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Kanban_board) — HTML5 Drag API behavior, dragstart/dragover/drop pattern (HIGH confidence)
+- [MCP setup guides: Cursor, Claude Code, Windsurf](https://help.yourgpt.ai/article/mcp-setup-guide-for-claude-desktop-cursor-and-windsurf-1789) — per-IDE config file locations and JSON structure (MEDIUM confidence — third-party guide, consistent across multiple sources)
+- [FlexSearch](https://github.com/nextapps-de/flexsearch), [MiniSearch](https://github.com/lucaong/minisearch) — client-side full-text search library options (not recommended for this project — zero-dependency constraint)
 
 ---
-*Feature research for: MCP server exposing filesystem-backed project data (Keloia Docs v1.1)*
+
+*Feature research for: Keloia Docs + MCP Server v2.0 (search, auth, CRUD, interactive kanban)*
 *Researched: 2026-02-22*

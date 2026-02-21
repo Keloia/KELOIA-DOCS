@@ -335,6 +335,12 @@ async function router() {
   const view = parts[1] || 'docs';
   const param = parts[2] || null;
 
+  // Clear search state on navigation
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+  if (searchInput) searchInput.value = '';
+  if (searchResults) { searchResults.hidden = true; searchResults.innerHTML = ''; }
+
   switch (view) {
     case 'docs':
       await renderDoc(param);

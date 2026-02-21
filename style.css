@@ -499,5 +499,18 @@ body {
   #main {
     padding: 1rem;
     max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Kanban: stack columns vertically on mobile */
+  .kanban-board {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+
+  .kanban-column {
+    min-width: 0;
+    width: 100%;
+    flex: none;
   }
 }

@@ -10,9 +10,9 @@ Requirements for v2.0 release. Each maps to roadmap phases.
 ### Search
 
 - [x] **SRCH-01**: User can type in a search box at the top of the sidebar to search doc content
-- [ ] **SRCH-02**: Search results update live as user types (debounced)
-- [ ] **SRCH-03**: Search results show doc name and a text snippet with the matching content
-- [ ] **SRCH-04**: User can click a search result to navigate to that doc
+- [x] **SRCH-02**: Search results update live as user types (debounced)
+- [x] **SRCH-03**: Search results show doc name and a text snippet with the matching content
+- [x] **SRCH-04**: User can click a search result to navigate to that doc
 - [ ] **SRCH-05**: MCP tool `keloia_search_docs` searches doc content by keyword or regex
 - [ ] **SRCH-06**: MCP tool `keloia_search_docs` supports filtering by doc slug
 
@@ -90,9 +90,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | SRCH-01 | Phase 6 | Complete |
-| SRCH-02 | Phase 6 | Pending |
-| SRCH-03 | Phase 6 | Pending |
-| SRCH-04 | Phase 6 | Pending |
+| SRCH-02 | Phase 6 | Complete |
+| SRCH-03 | Phase 6 | Complete |
+| SRCH-04 | Phase 6 | Complete |
 | GUID-01 | Phase 6 | Complete |
 | GUID-02 | Phase 6 | Complete |
 | SRCH-05 | Phase 7 | Pending |

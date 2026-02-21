@@ -37,7 +37,7 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details.
 
 **Milestone Goal:** Transform the site from read-only to read-write with GitHub PAT authentication, full-text search across both surfaces, interactive kanban drag-and-drop, and MCP doc CRUD tools.
 
-- [ ] **Phase 6: Site Search + Guide** — Full-text doc search in the sidebar and static MCP setup guide page
+- [x] **Phase 6: Site Search + Guide** — Full-text doc search in the sidebar and static MCP setup guide page (completed 2026-02-21)
 - [ ] **Phase 7: MCP Search + Doc CRUD Tools** — `keloia_search_docs`, `keloia_add_doc`, `keloia_edit_doc`, `keloia_delete_doc` MCP tools
 - [ ] **Phase 8: GitHub Auth** — PAT entry modal, localStorage persistence, and auth-gated write UI
 - [ ] **Phase 9: GitHub API Wrapper** — SHA-aware Contents API wrapper with serialized write queue
@@ -56,7 +56,7 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details.
   3. Clicking a search result navigates to that doc
   4. The MCP setup guide is listed in the sidebar navigation and renders as a full doc page
   5. The search index is not built at page load — it builds on first focus of the search box
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 06-01-PLAN.md — Guide page + HTML/CSS scaffolding (MiniSearch CDN, search input, guide content)
 - [ ] 06-02-PLAN.md — Search JS logic (lazy index build, debounced search, result rendering)
@@ -126,7 +126,7 @@ Plans:
 | 3. MCP Foundation | v1.1 | 2/2 | Complete | 2026-02-21 |
 | 4. Read Tools | v1.1 | 2/2 | Complete | 2026-02-22 |
 | 5. Write Tools + Integration | v1.1 | 3/3 | Complete | 2026-02-22 |
-| 6. Site Search + Guide | 1/2 | In Progress|  | - |
+| 6. Site Search + Guide | 2/2 | Complete   | 2026-02-21 | - |
 | 7. MCP Search + Doc CRUD Tools | v2.0 | 0/TBD | Not started | - |
 | 8. GitHub Auth | v2.0 | 0/TBD | Not started | - |
 | 9. GitHub API Wrapper | v2.0 | 0/TBD | Not started | - |

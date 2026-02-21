@@ -6,15 +6,7 @@ A single repo that serves Keloia project documentation to humans via a GitHub Pa
 
 The static site is shipped and live: a vanilla JS SPA with hash routing, dark theme, markdown rendering via marked.js + DOMPurify, kanban board with color-coded columns, and progress tracker with computed bars. GitHub Actions deploys on push to main with no build step.
 
-## Current Milestone: v1.1 MCP Server
-
-**Goal:** Claude Code can read all project docs, kanban state, and milestone progress via MCP tools — and create/move tasks and update progress with validated, atomic writes.
-
-**Target features:**
-- MCP server foundation (stdio transport, logging, path resolution)
-- Read tools (list_docs, read_doc, get_kanban, get_progress)
-- Write tools (add_task, move_task, update_progress) with Zod validation and atomic writes
-- Claude Code integration (.mcp.json, README setup)
+The MCP server is shipped: a TypeScript server with 7 tools (4 read, 3 write) that gives Claude Code full access to project docs, kanban board, and milestone progress. Zod validation, atomic writes, and natural language tool selection work out of the box.
 
 ## Core Value
 
@@ -36,17 +28,18 @@ When a markdown or JSON file changes, both humans (via the site) and AI tools (v
 - ✓ Active sidebar link highlighting on navigation — v1.0
 - ✓ All data fetches use relative paths for GitHub Pages compat — v1.0
 - ✓ GitHub Actions workflow deploys site on push to main — v1.0
+- ✓ MCP server with list_docs and read_doc tools — v1.1
+- ✓ MCP server with get_kanban tool (denormalized board) — v1.1
+- ✓ MCP server with add_task and move_task write tools (Zod-validated, atomic writes) — v1.1
+- ✓ MCP server with get_progress and update_progress tools — v1.1
+- ✓ MCP server runs locally via stdio transport for Claude Code integration — v1.1
+- ✓ MCP server structured for future HTTP/SSE transport (transport.ts separation) — v1.1
+- ✓ .mcp.json config for Claude Code project-scope registration — v1.1
+- ✓ README with setup instructions (clone, install, build, register) — v1.1
 
 ### Active
 
-- [ ] MCP server with list_docs and read_doc tools
-- [ ] MCP server with get_kanban tool (column/label/assignee filters)
-- [ ] MCP server with add_task and move_task write tools (Zod-validated, atomic writes)
-- [ ] MCP server with get_progress and update_progress tools
-- [ ] MCP server runs locally via stdio transport for Claude Code integration
-- [ ] MCP server structured for future HTTP/SSE transport
-- [ ] .mcp.json config for Claude Code project-scope registration
-- [ ] README with setup instructions (clone, install, build, register)
+(None — next milestone requirements defined via `/gsd:new-milestone`)
 
 ### Out of Scope
 
@@ -60,16 +53,20 @@ When a markdown or JSON file changes, both humans (via the site) and AI tools (v
 - Remote MCP transport in v1 — stdio first, remote when needed
 - WebSocket live updates — requires persistent server; GitHub Pages is static
 - Edit-in-place on site — requires GitHub API auth; beyond current scope
+- Column/assignee filters on get_kanban — deferred to v2 (READ-06)
+- Computed percentComplete on get_progress — deferred to v2 (READ-07)
+- Schema version assertion on reads — deferred to v2 (READ-08)
+- keloia_search_docs keyword search — deferred to v2 (MCP-08)
 
 ## Context
 
 Shipped v1.0 with 846 lines of site code (HTML/CSS/JS) plus 14 data files.
-Tech stack: Vanilla HTML/CSS/JS for site, marked.js + DOMPurify from CDN, GitHub Actions for deploy.
+Shipped v1.1 with 386 lines of TypeScript MCP server code (6 source modules, 7 tools).
+Tech stack: Vanilla HTML/CSS/JS for site, TypeScript + @modelcontextprotocol/sdk + Zod for MCP server, GitHub Actions for deploy.
 Data layer uses split-file JSON pattern: index.json as schema anchor + one file per entity.
+Both surfaces (site + MCP) read the same `data/` directory — no duplication, no sync.
 
-Next milestone focuses on the MCP server: TypeScript + @modelcontextprotocol/sdk + Zod. The server reads the same `data/` files the site renders.
-
-**Target users:** Reza (primary developer) and Claude Code (AI assistant) — both need access to the same project context.
+**Target users:** Reza (primary developer) and Claude Code (AI assistant) — both have full read/write access to project context.
 
 ## Constraints
 
@@ -91,8 +88,13 @@ Next milestone focuses on the MCP server: TypeScript + @modelcontextprotocol/sdk
 | DOMPurify wraps all marked output | marked.parse produces raw HTML; direct innerHTML is XSS vulnerable | ✓ Good — security baseline |
 | Relative fetch paths everywhere | Leading slash resolves to github.io root, not project subdirectory | ✓ Good — Pages compat verified |
 | Column-based color-coding for kanban | Task schema has no priority field; column membership is semantic equivalent | ✓ Good — cleaner than adding unused fields |
-| Stdio transport first | Local Claude Code usage is the primary use case; remote transport deferred | — Pending |
+| Stdio transport first | Local Claude Code usage is the primary use case; remote transport deferred | ✓ Good — works reliably, transport.ts ready for swap |
 | GitHub Pages over Cloudflare/Vercel | Serves raw files from repo with zero config, no build step required | ✓ Good — working |
+| @modelcontextprotocol/sdk v1.x | v2 not stable, requires Zod 4 which contradicts requirements | ✓ Good — stable, works with Zod 3 |
+| Separate mcp-server/package.json | Repo root is a static site, keeps type:module isolated | ✓ Good — clean separation |
+| import.meta.url path resolution | No env override needed; single developer, deterministic paths | ✓ Good — works reliably |
+| Write task file then update index | Ensures index only references files that exist on disk | ✓ Good — prevents dangling refs |
+| atomicWriteJson (writeFileSync + renameSync) | No partial reads possible under concurrent access | ✓ Good — crash-safe writes |
 
 ---
-*Last updated: 2026-02-22 after v1.0 milestone*
+*Last updated: 2026-02-22 after v1.1 milestone*

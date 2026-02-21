@@ -5,23 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** When a markdown or JSON file changes, both humans (via the site) and AI tools (via MCP) see the update immediately — no build pipeline, no deploy step, no sync.
-**Current focus:** Milestone v1.1 — MCP Server (all phases complete; v1.1 milestone fully verified)
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 5 — Write Tools
-Plan: 3 of 3 complete
-Status: Phase 5 complete — write tools built and verified end-to-end in Claude Code (plan 03); all 7 MCP tools confirmed working
-Last activity: 2026-02-22 — Write tools verified in Claude Code, all 7 steps passed (plan 03)
+Phase: All v1.0 + v1.1 phases complete
+Status: Milestone v1.1 shipped — 7 MCP tools (4 read, 3 write) implemented, verified, documented
+Last activity: 2026-02-22 — v1.1 milestone archived
 
-Progress: [██████████] 100% (3/3 v1.1 phases complete)
+Progress: [██████████] 100% (v1.0 + v1.1 shipped)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: ~3.5 min
-- Total execution time: ~28 min
+- Total plans completed: 10 (3 in v1.0, 7 in v1.1)
+- Average duration: ~4 min
+- Total execution time: ~43 min
 
 **By Phase:**
 
@@ -33,35 +32,11 @@ Progress: [██████████] 100% (3/3 v1.1 phases complete)
 | 04-read-tools | 2 | ~7 min | ~3.5 min |
 | 05-write-tools | 3 | ~15 min | ~5 min |
 
-*Updated after each plan completion*
-| Phase 05-write-tools P01 | 2 | 2 tasks | 2 files |
-| Phase 05-write-tools P03 | ~10 | 2 tasks | 4 files |
-
 ## Accumulated Context
 
 ### Decisions
 
-- Used @modelcontextprotocol/sdk v1.x (not v2 pre-alpha) — v2 not stable, requires Zod 4 which contradicts requirements
-- Separate mcp-server/package.json — repo root is a static site, keeps type:module isolated
-- Transport in dedicated transport.ts (MCP-05) — swapping to HTTP means editing one file
-- Pure import.meta.url path resolution — no KELOIA_REPO_ROOT env override (single-developer, deterministic)
-- Gitignore dist/ — developer runs `npm run build` before Claude Code connection
-- Committed .mcp.json to repo (project-scoped) — single-developer, shared config is correct approach
-- Used node + mcp-server/dist/index.js in .mcp.json (not npx tsx) — built output more reliable for Claude Code process spawning
-- args path in .mcp.json is relative to repo root — Claude Code spawns from project root
-- Used type: 'text' as const on content array items — TypeScript literal narrowing requires this without explicit return type annotation
-- Inline type assertions on JSON.parse results — full Zod file parsing is overkill for internal data files with known schemas
-- Pretty-printed JSON (null, 2) in all tool responses — readability aids Claude debugging
-- slug allowlist via index.json prevents path traversal in keloia_read_doc
-- README at repo root (not mcp-server/README.md) — covers both static site and MCP server, matches GitHub default display location
-- [Phase 05-write-tools]: Write task file first, then update index — ensures index only references files that exist
-- [Phase 05-write-tools]: atomicWriteJson uses writeFileSync + renameSync pattern — no partial reads possible under concurrent access
-- [Phase 05-write-tools]: notes field uses z.string().nullable().optional() — allows null as distinct valid value vs omission
-
-### Pending Todos
-
-- ~~Decide whether to commit `mcp-server/dist/` or gitignore and build locally~~ Resolved: gitignore dist/
-- ~~Decide `.mcp.json` scope (project-scoped committed vs local `--scope local`) before starting Phase 3~~ Resolved: committed project-scoped .mcp.json
+See PROJECT.md Key Decisions table for full list.
 
 ### Blockers/Concerns
 
@@ -70,5 +45,5 @@ Progress: [██████████] 100% (3/3 v1.1 phases complete)
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 05-write-tools 05-03-PLAN.md — all 7 MCP tools verified end-to-end in Claude Code; v1.1 milestone complete
-Resume with: Next milestone planning (v1.1 complete, all 7 MCP tools implemented, documented, and verified)
+Stopped at: Milestone v1.1 archived
+Resume with: `/gsd:new-milestone` to start next milestone cycle

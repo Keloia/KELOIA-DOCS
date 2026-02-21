@@ -33,3 +33,36 @@
 
 ---
 
+
+## v1.1 MCP Server (Shipped: 2026-02-22)
+
+**Phases completed:** 3 phases, 7 plans
+**Timeline:** 1 day (2026-02-21 → 2026-02-22)
+**Files:** 35 files changed, +3,672 lines
+**LOC (server):** 386 lines TypeScript (mcp-server/src/)
+**Git range:** 91aa3bc..811b6a1
+
+**Delivered:** TypeScript MCP server with 7 tools (4 read, 3 write) that gives Claude Code full access to project docs, kanban board, and milestone progress — with Zod validation, atomic writes, and natural language tool selection.
+
+**Key accomplishments:**
+- TypeScript MCP server with Node16 ESM, stdio transport, and import.meta.url path resolution
+- Four read tools (list_docs, read_doc, get_kanban, get_progress) with pagination and error handling
+- Three write tools (add_task, move_task, update_progress) with Zod validation and atomic writes
+- All 7 tools wired through single createServer() entry point with keloia_ prefix
+- README enabling fresh-clone setup in 4 commands
+- Claude Code selects correct tool from natural language without prompt hints
+
+**Key decisions:**
+- @modelcontextprotocol/sdk v1.x (not v2 pre-alpha) — stable, works with Zod 3
+- Separate mcp-server/package.json — isolates type:module from static site
+- Transport in dedicated transport.ts — swapping to HTTP means editing one file
+- Pure import.meta.url path resolution — no env override needed (single developer)
+- Write task file first, then update index — ensures index only references existing files
+- atomicWriteJson uses writeFileSync + renameSync — no partial reads under concurrent access
+
+**Tech debt accepted:** None
+
+**Archive:** `.planning/milestones/v1.1-ROADMAP.md`, `.planning/milestones/v1.1-REQUIREMENTS.md`
+
+---
+

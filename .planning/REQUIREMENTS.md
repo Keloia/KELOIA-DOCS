@@ -16,14 +16,14 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Static Site
 
-- [ ] **SITE-01**: SPA shell (`index.html`) with sidebar navigation listing docs, kanban, and progress views
-- [ ] **SITE-02**: Markdown doc rendering via marked.js from CDN with DOMPurify XSS protection
+- [x] **SITE-01**: SPA shell (`index.html`) with sidebar navigation listing docs, kanban, and progress views
+- [x] **SITE-02**: Markdown doc rendering via marked.js from CDN with DOMPurify XSS protection
 - [ ] **SITE-03**: Kanban board view rendering columns and cards from `board.json` with priority color-coding
 - [ ] **SITE-04**: Progress tracker view rendering milestone modules with progress bars from `tracker.json`
-- [ ] **SITE-05**: Dark theme CSS with responsive layout (CSS custom properties, flexbox)
-- [ ] **SITE-06**: Active sidebar link highlighting on navigation
-- [ ] **SITE-07**: All data fetches use relative paths for GitHub Pages subdirectory compatibility
-- [ ] **SITE-08**: GitHub Actions workflow deploys site on push to main
+- [x] **SITE-05**: Dark theme CSS with responsive layout (CSS custom properties, flexbox)
+- [x] **SITE-06**: Active sidebar link highlighting on navigation
+- [x] **SITE-07**: All data fetches use relative paths for GitHub Pages subdirectory compatibility
+- [x] **SITE-08**: GitHub Actions workflow deploys site on push to main
 
 ### MCP Server
 
@@ -88,14 +88,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-02 | Phase 1 | Complete |
 | DATA-03 | Phase 1 | Complete |
 | DATA-04 | Phase 1 | Complete |
-| SITE-01 | Phase 2 | Pending |
-| SITE-02 | Phase 2 | Pending |
+| SITE-01 | Phase 2 | Complete |
+| SITE-02 | Phase 2 | Complete |
 | SITE-03 | Phase 2 | Pending |
 | SITE-04 | Phase 2 | Pending |
-| SITE-05 | Phase 2 | Pending |
-| SITE-06 | Phase 2 | Pending |
-| SITE-07 | Phase 2 | Pending |
-| SITE-08 | Phase 2 | Pending |
+| SITE-05 | Phase 2 | Complete |
+| SITE-06 | Phase 2 | Complete |
+| SITE-07 | Phase 2 | Complete |
+| SITE-08 | Phase 2 | Complete |
 | MCP-09 | Phase 3 | Pending |
 | MCP-12 | Phase 3 | Pending |
 | MCP-13 | Phase 3 | Pending |

@@ -5,33 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** When a markdown or JSON file changes, both humans (via the site) and AI tools (via MCP) see the update immediately — no build pipeline, no deploy step, no sync.
-**Current focus:** Phase 1 — Data Layer
+**Current focus:** Phase 2 — Static Site
 
 ## Current Position
 
-Phase: 1 of 5 (Data Layer)
-Plan: 1 of 1 in current phase
-Status: Phase 1 Plan 1 complete
-Last activity: 2026-02-21 — 01-01 data layer created, data contracts locked
+Phase: 2 of 5 (Static Site)
+Plan: 1 of 2 in current phase
+Status: Phase 2 Plan 1 complete
+Last activity: 2026-02-22 — 02-01 SPA shell, hash router, doc rendering, GitHub Actions deploy
 
-Progress: [██░░░░░░░░] 20%
+Progress: [████░░░░░░] 40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
+- Total plans completed: 2
 - Average duration: 2 min
-- Total execution time: 0.03 hours
+- Total execution time: 0.06 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-data-layer | 1 | 2 min | 2 min |
+| 02-static-site | 1 | 2 min | 2 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2 min)
-- Trend: -
+- Last 5 plans: 01-01 (2 min), 02-01 (2 min)
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -50,6 +51,11 @@ Recent decisions affecting current work:
 - [01-01]: schemaVersion: 1 on all index files — enables future consumers to detect and handle schema migrations
 - [01-01]: No computed fields stored in progress files — consumers calculate tasksCompleted/tasksTotal at read time
 - [01-01]: null for absent optional fields — consistent for JSON consumers, clearer than omission
+- [02-01]: Hash routing mandatory — GitHub Pages project sites serve from /keloia-docs/ subdirectory; History API routes 404 on refresh
+- [02-01]: DOMPurify.sanitize wraps all marked.parse output — no direct innerHTML assignment of raw markdown HTML
+- [02-01]: data/docs/index.json as doc registry — serves sidebar population and future MCP list_docs tool
+- [02-01]: Relative fetch paths enforced — no leading slash on any URL for GitHub Pages subdirectory compat
+- [02-01]: CDN scripts have no async/defer — app.js depends on marked and DOMPurify globals being available synchronously
 
 ### Pending Todos
 
@@ -57,11 +63,11 @@ None yet.
 
 ### Blockers/Concerns
 
-- Confirm deployed GitHub Pages URL format (`github.io/keloia-docs/` vs `github.io/`) before writing any `fetch()` paths in Phase 2
 - Decide `.mcp.json` scope (project-scoped committed vs local `~/.claude.json`) before Phase 3
+- User must set Pages source to "GitHub Actions" in repository Settings > Pages > Source after pushing deploy.yml
 
 ## Session Continuity
 
-Last session: 2026-02-21
-Stopped at: Completed 01-01-PLAN.md — data layer schemas and seed content complete
+Last session: 2026-02-22
+Stopped at: Completed 02-01-PLAN.md — SPA shell, hash router, doc rendering pipeline, GitHub Actions deploy
 Resume file: None

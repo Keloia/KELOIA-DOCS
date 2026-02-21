@@ -43,7 +43,7 @@ Plans:
   3. The kanban view shows columns with cards color-coded by priority from `board.json`
   4. The progress view shows milestone modules with CSS progress bars from `tracker.json`
   5. Pushing a change to `main` triggers GitHub Actions and the updated site is live within two minutes
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 - [ ] 02-01-PLAN.md — SPA shell, dark theme, hash routing, doc rendering, docs registry, GitHub Actions deploy
 - [ ] 02-02-PLAN.md — Kanban board view with column color-coding, progress tracker with computed bars, visual verification
@@ -90,7 +90,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Data Layer | 1/1 | Complete   | 2026-02-21 |
-| 2. Static Site | 0/2 | Planned | - |
+| 2. Static Site | 1/2 | In Progress|  |
 | 3. MCP Foundation | 0/? | Not started | - |
 | 4. MCP Read Tools | 0/? | Not started | - |
 | 5. MCP Write Tools + Integration | 0/? | Not started | - |

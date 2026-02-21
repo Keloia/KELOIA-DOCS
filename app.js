@@ -90,14 +90,126 @@ async function renderDoc(slug) {
 }
 
 /* ============================================================
-   Placeholder Views (implemented in Plan 02)
+   Kanban Board View
    ============================================================ */
-function renderKanban() {
-  mainEl.innerHTML = '<p>Kanban board loading...</p>';
+async function renderKanban() {
+  mainEl.innerHTML = '<p>Loading kanban board...</p>';
+
+  try {
+    // Fetch index to get columns and task IDs
+    const indexRes = await fetch('data/kanban/index.json');
+    if (!indexRes.ok) throw new Error(`Failed to fetch kanban index: ${indexRes.status}`);
+    const indexData = await indexRes.json();
+
+    // Fan-out: fetch all individual task files in parallel
+    const taskFiles = await Promise.all(
+      indexData.tasks.map(id =>
+        fetch(`data/kanban/${id}.json`).then(r => {
+          if (!r.ok) throw new Error(`Failed to fetch task ${id}: ${r.status}`);
+          return r.json();
+        })
+      )
+    );
+
+    // Derive CSS class from column name: lowercase, spaces -> hyphens
+    function columnClass(name) {
+      return name.toLowerCase().replace(/\s+/g, '-');
+    }
+
+    // Render columns
+    const columnsHtml = indexData.columns.map(colName => {
+      const colTasks = taskFiles.filter(t => t.column === colName);
+      const cls = columnClass(colName);
+
+      const cardsHtml = colTasks.map(task => {
+        const title = escapeHtml(task.title || '');
+        const desc = task.description
+          ? `<p class="card-description">${escapeHtml(task.description.slice(0, 100))}${task.description.length > 100 ? '…' : ''}</p>`
+          : '';
+        const assignee = task.assignee
+          ? `<span class="card-assignee">${escapeHtml(task.assignee)}</span>`
+          : '';
+        return `<div class="kanban-card">
+          <p class="card-title">${title}</p>
+          ${desc}
+          ${assignee}
+        </div>`;
+      }).join('');
+
+      return `<div class="kanban-column column-${cls}">
+        <h3>${escapeHtml(colName)} <span class="col-count">${colTasks.length}</span></h3>
+        ${cardsHtml || '<p class="empty-column">No tasks</p>'}
+      </div>`;
+    }).join('');
+
+    mainEl.innerHTML = `<div class="kanban-board">${columnsHtml}</div>`;
+  } catch (err) {
+    console.error('Failed to render kanban:', err);
+    mainEl.innerHTML = '<p class="error-message">Error loading kanban board.</p>';
+  }
 }
 
-function renderProgress() {
-  mainEl.innerHTML = '<p>Progress tracker loading...</p>';
+/* ============================================================
+   Progress Tracker View
+   ============================================================ */
+async function renderProgress() {
+  mainEl.innerHTML = '<p>Loading progress tracker...</p>';
+
+  try {
+    // Fetch index to get milestone IDs
+    const indexRes = await fetch('data/progress/index.json');
+    if (!indexRes.ok) throw new Error(`Failed to fetch progress index: ${indexRes.status}`);
+    const indexData = await indexRes.json();
+
+    // Fan-out: fetch all individual milestone files in parallel
+    const milestones = await Promise.all(
+      indexData.milestones.map(id =>
+        fetch(`data/progress/${id}.json`).then(r => {
+          if (!r.ok) throw new Error(`Failed to fetch milestone ${id}: ${r.status}`);
+          return r.json();
+        })
+      )
+    );
+
+    // Status badge color mapping
+    function statusClass(status) {
+      if (status === 'complete') return 'badge-complete';
+      if (status === 'in-progress') return 'badge-in-progress';
+      return 'badge-pending';
+    }
+
+    const milestonesHtml = milestones.map(m => {
+      // Calculate progress at render time — never read stored percentage
+      const total = m.tasksTotal || 0;
+      const completed = m.tasksCompleted || 0;
+      const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+      const notes = m.notes
+        ? `<p class="milestone-notes">${escapeHtml(m.notes)}</p>`
+        : '';
+
+      return `<div class="milestone-card">
+        <div class="milestone-title">
+          <span class="milestone-name">${escapeHtml(m.title || '')}</span>
+          <span class="badge badge-phase">Phase ${m.phase}</span>
+          <span class="badge ${statusClass(m.status)}">${escapeHtml(m.status || 'pending')}</span>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" style="width: ${percent}%"></div>
+        </div>
+        <p class="progress-stats">${completed} of ${total} tasks complete (${percent}%)</p>
+        ${notes}
+      </div>`;
+    }).join('');
+
+    mainEl.innerHTML = `<div class="progress-tracker">
+      <h1>Project Progress</h1>
+      ${milestonesHtml}
+    </div>`;
+  } catch (err) {
+    console.error('Failed to render progress:', err);
+    mainEl.innerHTML = '<p class="error-message">Error loading progress tracker.</p>';
+  }
 }
 
 /* ============================================================

@@ -258,6 +258,220 @@ body {
 }
 
 /* ============================================================
+   Kanban Board
+   ============================================================ */
+.kanban-board {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding: 0.5rem 0 1rem;
+  align-items: flex-start;
+}
+
+.kanban-column {
+  flex: 1;
+  min-width: 250px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.kanban-column h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.col-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 0 0.5rem;
+  height: 1.25rem;
+  min-width: 1.25rem;
+}
+
+.kanban-card {
+  background: var(--bg-card);
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-left: 3px solid transparent;
+  transition: filter 0.15s ease;
+}
+
+.kanban-card:hover {
+  filter: brightness(1.1);
+}
+
+.column-backlog .kanban-card {
+  border-left-color: var(--col-backlog);
+}
+
+.column-in-progress .kanban-card {
+  border-left-color: var(--col-in-progress);
+}
+
+.column-done .kanban-card {
+  border-left-color: var(--col-done);
+}
+
+.card-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.card-description {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin-top: 0.375rem;
+  margin-bottom: 0;
+}
+
+.card-assignee {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-radius: 10px;
+  padding: 0.1em 0.5em;
+  border: 1px solid var(--border);
+}
+
+.empty-column {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.error-message {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* ============================================================
+   Progress Tracker
+   ============================================================ */
+.progress-tracker {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.progress-tracker h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+
+.milestone-card {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.milestone-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.milestone-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 120px;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 0.15em 0.6em;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.badge-phase {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.badge-pending {
+  background: rgba(108, 117, 125, 0.2);
+  color: var(--col-backlog);
+  border: 1px solid var(--col-backlog);
+}
+
+.badge-in-progress {
+  background: rgba(74, 158, 255, 0.15);
+  color: var(--col-in-progress);
+  border: 1px solid var(--col-in-progress);
+}
+
+.badge-complete {
+  background: rgba(46, 213, 115, 0.15);
+  color: var(--col-done);
+  border: 1px solid var(--col-done);
+}
+
+/* Progress bar */
+.progress-bar-track {
+  background: var(--border);
+  border-radius: 4px;
+  height: 8px;
+  width: 100%;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-bar-fill {
+  background: var(--accent);
+  border-radius: 4px;
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.progress-stats {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.milestone-notes {
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0;
+  line-height: 1.5;
+}
+
+/* ============================================================
    Responsive — Mobile
    ============================================================ */
 @media (max-width: 768px) {

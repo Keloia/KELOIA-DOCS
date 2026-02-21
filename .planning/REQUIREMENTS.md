@@ -17,11 +17,11 @@ Requirements for MCP server milestone. Each maps to roadmap phases.
 
 ### Read Tools
 
-- [ ] **READ-01**: `keloia_list_docs` returns available documentation filenames from `data/docs/index.json`
-- [ ] **READ-02**: `keloia_read_doc` reads a markdown file by slug with `max_tokens` and `offset` optional params for large doc pagination
-- [ ] **READ-03**: `keloia_get_kanban` returns denormalized board (columns + all task objects) from split-file JSON
-- [ ] **READ-04**: `keloia_get_progress` returns all milestones with status, task counts, and notes from split-file JSON
-- [ ] **READ-05**: All read tools return `isError: true` with clear message for invalid inputs (bad slug, missing file)
+- [x] **READ-01**: `keloia_list_docs` returns available documentation filenames from `data/docs/index.json`
+- [x] **READ-02**: `keloia_read_doc` reads a markdown file by slug with `max_tokens` and `offset` optional params for large doc pagination
+- [x] **READ-03**: `keloia_get_kanban` returns denormalized board (columns + all task objects) from split-file JSON
+- [x] **READ-04**: `keloia_get_progress` returns all milestones with status, task counts, and notes from split-file JSON
+- [x] **READ-05**: All read tools return `isError: true` with clear message for invalid inputs (bad slug, missing file)
 
 ### Write Tools
 
@@ -32,8 +32,8 @@ Requirements for MCP server milestone. Each maps to roadmap phases.
 
 ### Integration
 
-- [ ] **INTG-01**: All tool names prefixed with `keloia_` to avoid Claude Code built-in collisions
-- [ ] **INTG-02**: Descriptive action-first tool descriptions for accurate AI tool selection
+- [x] **INTG-01**: All tool names prefixed with `keloia_` to avoid Claude Code built-in collisions
+- [x] **INTG-02**: Descriptive action-first tool descriptions for accurate AI tool selection
 - [ ] **INTG-03**: README with setup instructions (clone, `npm install`, build, register)
 
 ## v2 Requirements
@@ -84,13 +84,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MCP-03 | Phase 3 | Complete |
 | MCP-04 | Phase 3 | Complete |
 | MCP-05 | Phase 3 | Complete |
-| READ-01 | Phase 4 | Pending |
-| READ-02 | Phase 4 | Pending |
-| READ-03 | Phase 4 | Pending |
-| READ-04 | Phase 4 | Pending |
-| READ-05 | Phase 4 | Pending |
-| INTG-01 | Phase 4 | Pending |
-| INTG-02 | Phase 4 | Pending |
+| READ-01 | Phase 4 | Complete |
+| READ-02 | Phase 4 | Complete |
+| READ-03 | Phase 4 | Complete |
+| READ-04 | Phase 4 | Complete |
+| READ-05 | Phase 4 | Complete |
+| INTG-01 | Phase 4 | Complete |
+| INTG-02 | Phase 4 | Complete |
 | WRITE-01 | Phase 5 | Pending |
 | WRITE-02 | Phase 5 | Pending |
 | WRITE-03 | Phase 5 | Pending |

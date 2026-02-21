@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 3 — MCP Foundation
-Plan: 2 of 2 complete
-Status: Phase 3 complete — MCP server registered and connected in Claude Code
-Last activity: 2026-02-22 — MCP server registered via .mcp.json, keloia confirmed connected (Plan 02)
+Phase: 4 — Read Tools
+Plan: 1 of 1 complete
+Status: Phase 4 complete — Four keloia_ read tools implemented and registered with MCP server
+Last activity: 2026-02-22 — Four read tools implemented in read.ts, wired into server.ts (Plan 01)
 
-Progress: [███░░░░░░░] 33% (1/3 v1.1 phases complete)
+Progress: [██████░░░░] 67% (2/3 v1.1 phases complete)
 
 ## Performance Metrics
 
@@ -30,6 +30,7 @@ Progress: [███░░░░░░░] 33% (1/3 v1.1 phases complete)
 | 01-data-layer | 1 | 2 min | 2 min |
 | 02-static-site | 2 | ~12 min | ~6 min |
 | 03-mcp-foundation | 2 | ~7 min | ~3.5 min |
+| 04-read-tools | 1 | ~5 min | ~5 min |
 
 *Updated after each plan completion*
 
@@ -45,6 +46,10 @@ Progress: [███░░░░░░░] 33% (1/3 v1.1 phases complete)
 - Committed .mcp.json to repo (project-scoped) — single-developer, shared config is correct approach
 - Used node + mcp-server/dist/index.js in .mcp.json (not npx tsx) — built output more reliable for Claude Code process spawning
 - args path in .mcp.json is relative to repo root — Claude Code spawns from project root
+- Used type: 'text' as const on content array items — TypeScript literal narrowing requires this without explicit return type annotation
+- Inline type assertions on JSON.parse results — full Zod file parsing is overkill for internal data files with known schemas
+- Pretty-printed JSON (null, 2) in all tool responses — readability aids Claude debugging
+- slug allowlist via index.json prevents path traversal in keloia_read_doc
 
 ### Pending Todos
 
@@ -58,5 +63,5 @@ Progress: [███░░░░░░░] 33% (1/3 v1.1 phases complete)
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 03-mcp-foundation 03-02-PLAN.md — Phase 3 complete
-Resume with: `/gsd:execute-phase 04-read-tools` (Phase 4: Read Tools)
+Stopped at: Completed 04-read-tools 04-01-PLAN.md — Phase 4 complete
+Resume with: `/gsd:execute-phase 05-write-tools` (Phase 5: Write Tools)

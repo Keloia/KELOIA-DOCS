@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 4 — Read Tools
+Phase: 5 — Write Tools
 Plan: 2 of 2 complete
-Status: Phase 4 complete — All four keloia_ read tools verified end-to-end in Claude Code
-Last activity: 2026-02-22 — Live verification of all 4 read tools in Claude Code (Plan 02)
+Status: Phase 5 complete — README.md created (plan 02); write tools previously implemented (plan 01)
+Last activity: 2026-02-22 — README.md created at repo root (plan 02)
 
-Progress: [██████░░░░] 67% (2/3 v1.1 phases complete)
+Progress: [██████████] 100% (3/3 v1.1 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: ~3.8 min
-- Total execution time: ~23 min
+- Total plans completed: 8
+- Average duration: ~3.5 min
+- Total execution time: ~28 min
 
 **By Phase:**
 
@@ -31,6 +31,7 @@ Progress: [██████░░░░] 67% (2/3 v1.1 phases complete)
 | 02-static-site | 2 | ~12 min | ~6 min |
 | 03-mcp-foundation | 2 | ~7 min | ~3.5 min |
 | 04-read-tools | 2 | ~7 min | ~3.5 min |
+| 05-write-tools | 2 | ~5 min | ~2.5 min |
 
 *Updated after each plan completion*
 
@@ -50,6 +51,7 @@ Progress: [██████░░░░] 67% (2/3 v1.1 phases complete)
 - Inline type assertions on JSON.parse results — full Zod file parsing is overkill for internal data files with known schemas
 - Pretty-printed JSON (null, 2) in all tool responses — readability aids Claude debugging
 - slug allowlist via index.json prevents path traversal in keloia_read_doc
+- README at repo root (not mcp-server/README.md) — covers both static site and MCP server, matches GitHub default display location
 
 ### Pending Todos
 
@@ -63,5 +65,5 @@ Progress: [██████░░░░] 67% (2/3 v1.1 phases complete)
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 04-read-tools 04-02-PLAN.md — Phase 4 fully complete (implementation + verification)
-Resume with: `/gsd:execute-phase 05-write-tools` (Phase 5: Write Tools)
+Stopped at: Completed 05-write-tools 05-02-PLAN.md — Phase 5 fully complete; v1.1 milestone complete
+Resume with: Next milestone planning (v1.1 complete, all 7 MCP tools implemented and documented)

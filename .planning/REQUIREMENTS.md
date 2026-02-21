@@ -34,7 +34,7 @@ Requirements for MCP server milestone. Each maps to roadmap phases.
 
 - [x] **INTG-01**: All tool names prefixed with `keloia_` to avoid Claude Code built-in collisions
 - [x] **INTG-02**: Descriptive action-first tool descriptions for accurate AI tool selection
-- [ ] **INTG-03**: README with setup instructions (clone, `npm install`, build, register)
+- [x] **INTG-03**: README with setup instructions (clone, `npm install`, build, register)
 
 ## v2 Requirements
 
@@ -95,7 +95,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WRITE-02 | Phase 5 | Pending |
 | WRITE-03 | Phase 5 | Pending |
 | WRITE-04 | Phase 5 | Pending |
-| INTG-03 | Phase 5 | Pending |
+| INTG-03 | Phase 5 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 17 total

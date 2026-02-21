@@ -67,7 +67,7 @@ Plans:
   3. Asking Claude to "update milestone progress" writes new fields to the milestone file atomically and the site renders the updated value on next load
   4. Calling a write tool with an invalid column name returns `isError: true` naming the valid column options
   5. A developer following the README from a fresh clone can install, build, register, and verify the server appears in Claude Code's `/mcp` status
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 Plans:
 - [ ] 05-01-PLAN.md — Implement three write tools in write.ts and wire into server.ts
 - [ ] 05-02-PLAN.md — Create README.md with setup instructions for fresh clone
@@ -84,4 +84,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Static Site | v1.0 | 2/2 | Complete | 2026-02-22 |
 | 3. MCP Foundation | 2/2 | Complete    | 2026-02-21 | - |
 | 4. Read Tools | v1.1 | Complete    | 2026-02-21 | 2026-02-22 |
-| 5. Write Tools + Integration | v1.1 | 0/3 | Not started | - |
+| 5. Write Tools + Integration | 1/3 | In Progress|  | - |

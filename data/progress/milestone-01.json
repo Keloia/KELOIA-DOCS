@@ -1,0 +1,9 @@
+{
+  "id": "milestone-01",
+  "phase": 1,
+  "title": "Data Layer",
+  "status": "in-progress",
+  "tasksTotal": 4,
+  "tasksCompleted": 0,
+  "notes": "Establishing the data contracts — docs, kanban, and progress schemas — that both the static site and MCP server will build against."
+}

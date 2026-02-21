@@ -126,7 +126,7 @@ Plans:
 | 3. MCP Foundation | v1.1 | 2/2 | Complete | 2026-02-21 |
 | 4. Read Tools | v1.1 | 2/2 | Complete | 2026-02-22 |
 | 5. Write Tools + Integration | v1.1 | 3/3 | Complete | 2026-02-22 |
-| 6. Site Search + Guide | 2/2 | Complete   | 2026-02-21 | - |
+| 6. Site Search + Guide | 2/2 | Complete    | 2026-02-21 | - |
 | 7. MCP Search + Doc CRUD Tools | v2.0 | 0/TBD | Not started | - |
 | 8. GitHub Auth | v2.0 | 0/TBD | Not started | - |
 | 9. GitHub API Wrapper | v2.0 | 0/TBD | Not started | - |

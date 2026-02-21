@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** When a markdown or JSON file changes, both humans (via the site) and AI tools (via MCP) see the update immediately — no build pipeline, no deploy step, no sync.
-**Current focus:** Milestone v1.1 — MCP Server (Phase 4: Read Tools complete, Phase 5: Write Tools next)
+**Current focus:** Milestone v1.1 — MCP Server (all phases complete; v1.1 milestone fully verified)
 
 ## Current Position
 
 Phase: 5 — Write Tools
-Plan: 2 of 2 complete
-Status: Phase 5 complete — README.md created (plan 02); write tools previously implemented (plan 01)
-Last activity: 2026-02-22 — README.md created at repo root (plan 02)
+Plan: 3 of 3 complete
+Status: Phase 5 complete — write tools built and verified end-to-end in Claude Code (plan 03); all 7 MCP tools confirmed working
+Last activity: 2026-02-22 — Write tools verified in Claude Code, all 7 steps passed (plan 03)
 
 Progress: [██████████] 100% (3/3 v1.1 phases complete)
 
@@ -31,10 +31,11 @@ Progress: [██████████] 100% (3/3 v1.1 phases complete)
 | 02-static-site | 2 | ~12 min | ~6 min |
 | 03-mcp-foundation | 2 | ~7 min | ~3.5 min |
 | 04-read-tools | 2 | ~7 min | ~3.5 min |
-| 05-write-tools | 2 | ~5 min | ~2.5 min |
+| 05-write-tools | 3 | ~15 min | ~5 min |
 
 *Updated after each plan completion*
 | Phase 05-write-tools P01 | 2 | 2 tasks | 2 files |
+| Phase 05-write-tools P03 | ~10 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -69,5 +70,5 @@ Progress: [██████████] 100% (3/3 v1.1 phases complete)
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 05-write-tools 05-02-PLAN.md — Phase 5 fully complete; v1.1 milestone complete
-Resume with: Next milestone planning (v1.1 complete, all 7 MCP tools implemented and documented)
+Stopped at: Completed 05-write-tools 05-03-PLAN.md — all 7 MCP tools verified end-to-end in Claude Code; v1.1 milestone complete
+Resume with: Next milestone planning (v1.1 complete, all 7 MCP tools implemented, documented, and verified)

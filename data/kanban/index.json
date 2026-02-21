@@ -1,5 +1,15 @@
 {
   "schemaVersion": 1,
-  "columns": ["Backlog", "In Progress", "Done"],
-  "tasks": ["task-001", "task-002", "task-003", "task-004"]
+  "columns": [
+    "Backlog",
+    "In Progress",
+    "Done"
+  ],
+  "tasks": [
+    "task-001",
+    "task-002",
+    "task-003",
+    "task-004",
+    "task-005"
+  ]
 }

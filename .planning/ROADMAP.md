@@ -23,7 +23,7 @@ See: `.planning/milestones/v1.0-ROADMAP.md` for full details.
 
 - [x] **Phase 3: MCP Foundation** — TypeScript server skeleton, toolchain, and Claude Code registration with provably correct path resolution and zero stdout pollution (completed 2026-02-21)
 - [x] **Phase 4: Read Tools** — All four read tools registered with domain-namespaced names and action-first descriptions; Claude Code can query docs, kanban, and progress (completed 2026-02-22)
-- [ ] **Phase 5: Write Tools + Integration** — Three write tools with Zod validation and atomic writes; README enables a fresh clone to register and run the server
+- [x] **Phase 5: Write Tools + Integration** — Three write tools with Zod validation and atomic writes; README enables a fresh clone to register and run the server (completed 2026-02-21)
 
 ## Phase Details
 
@@ -67,7 +67,7 @@ Plans:
   3. Asking Claude to "update milestone progress" writes new fields to the milestone file atomically and the site renders the updated value on next load
   4. Calling a write tool with an invalid column name returns `isError: true` naming the valid column options
   5. A developer following the README from a fresh clone can install, build, register, and verify the server appears in Claude Code's `/mcp` status
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 Plans:
 - [ ] 05-01-PLAN.md — Implement three write tools in write.ts and wire into server.ts
 - [ ] 05-02-PLAN.md — Create README.md with setup instructions for fresh clone
@@ -84,4 +84,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Static Site | v1.0 | 2/2 | Complete | 2026-02-22 |
 | 3. MCP Foundation | 2/2 | Complete    | 2026-02-21 | - |
 | 4. Read Tools | v1.1 | Complete    | 2026-02-21 | 2026-02-22 |
-| 5. Write Tools + Integration | 2/3 | In Progress|  | - |
+| 5. Write Tools + Integration | 3/3 | Complete   | 2026-02-21 | - |

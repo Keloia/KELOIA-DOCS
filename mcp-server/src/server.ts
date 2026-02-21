@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerReadTools } from "./tools/read.js";
+import { registerWriteTools } from "./tools/write.js";
 
 export function createServer(): McpServer {
   const server = new McpServer({
@@ -7,6 +8,6 @@ export function createServer(): McpServer {
     version: "1.0.0",
   });
   registerReadTools(server);
-  // Write tools registered in Phase 5
+  registerWriteTools(server);
   return server;
 }

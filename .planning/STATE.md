@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 3 — MCP Foundation
-Plan: 1 of 2 complete
-Status: Plan 01 complete — MCP server skeleton built and running
-Last activity: 2026-02-22 — MCP server skeleton created (Plan 01)
+Plan: 2 of 2 complete
+Status: Phase 3 complete — MCP server registered and connected in Claude Code
+Last activity: 2026-02-22 — MCP server registered via .mcp.json, keloia confirmed connected (Plan 02)
 
-Progress: [░░░░░░░░░░] 0% (0/3 v1.1 phases complete)
+Progress: [███░░░░░░░] 33% (1/3 v1.1 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
+- Total plans completed: 5
 - Average duration: ~4 min
-- Total execution time: ~16 min
+- Total execution time: ~21 min
 
 **By Phase:**
 
@@ -29,7 +29,7 @@ Progress: [░░░░░░░░░░] 0% (0/3 v1.1 phases complete)
 |-------|-------|-------|----------|
 | 01-data-layer | 1 | 2 min | 2 min |
 | 02-static-site | 2 | ~12 min | ~6 min |
-| 03-mcp-foundation | 1 (so far) | 2 min | 2 min |
+| 03-mcp-foundation | 2 | ~7 min | ~3.5 min |
 
 *Updated after each plan completion*
 
@@ -42,11 +42,14 @@ Progress: [░░░░░░░░░░] 0% (0/3 v1.1 phases complete)
 - Transport in dedicated transport.ts (MCP-05) — swapping to HTTP means editing one file
 - Pure import.meta.url path resolution — no KELOIA_REPO_ROOT env override (single-developer, deterministic)
 - Gitignore dist/ — developer runs `npm run build` before Claude Code connection
+- Committed .mcp.json to repo (project-scoped) — single-developer, shared config is correct approach
+- Used node + mcp-server/dist/index.js in .mcp.json (not npx tsx) — built output more reliable for Claude Code process spawning
+- args path in .mcp.json is relative to repo root — Claude Code spawns from project root
 
 ### Pending Todos
 
 - ~~Decide whether to commit `mcp-server/dist/` or gitignore and build locally~~ Resolved: gitignore dist/
-- ~~Decide `.mcp.json` scope (project-scoped committed vs local `--scope local`) before starting Phase 3~~ — covered in Plan 02
+- ~~Decide `.mcp.json` scope (project-scoped committed vs local `--scope local`) before starting Phase 3~~ Resolved: committed project-scoped .mcp.json
 
 ### Blockers/Concerns
 
@@ -55,5 +58,5 @@ Progress: [░░░░░░░░░░] 0% (0/3 v1.1 phases complete)
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Phase 3 Plan 01 complete — MCP server skeleton built and running
-Resume with: `/gsd:execute-phase 03-mcp-foundation` (Plan 02: .mcp.json registration)
+Stopped at: Completed 03-mcp-foundation 03-02-PLAN.md — Phase 3 complete
+Resume with: `/gsd:execute-phase 04-read-tools` (Phase 4: Read Tools)

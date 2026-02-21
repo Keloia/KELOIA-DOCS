@@ -21,7 +21,7 @@ See: `.planning/milestones/v1.0-ROADMAP.md` for full details.
 
 </details>
 
-- [ ] **Phase 3: MCP Foundation** — TypeScript server skeleton, toolchain, and Claude Code registration with provably correct path resolution and zero stdout pollution
+- [x] **Phase 3: MCP Foundation** — TypeScript server skeleton, toolchain, and Claude Code registration with provably correct path resolution and zero stdout pollution (completed 2026-02-21)
 - [ ] **Phase 4: Read Tools** — All four read tools registered with domain-namespaced names and action-first descriptions; Claude Code can query docs, kanban, and progress
 - [ ] **Phase 5: Write Tools + Integration** — Three write tools with Zod validation and atomic writes; README enables a fresh clone to register and run the server
 
@@ -37,7 +37,7 @@ See: `.planning/milestones/v1.0-ROADMAP.md` for full details.
   3. The server appears as "connected" in Claude Code's `/mcp` status (zero tools is acceptable at this stage)
   4. `grep -r "console.log" mcp-server/src/` returns zero results — all logging uses `console.error()`
   5. `REPO_ROOT`, `DOCS_DIR`, `KANBAN_DIR`, and `PROGRESS_DIR` log correct absolute paths to stderr at startup, not paths relative to wherever Claude Code was launched
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 03-01-PLAN.md — MCP server skeleton with TypeScript toolchain, source modules, and build
 - [ ] 03-02-PLAN.md — Claude Code registration via .mcp.json and connection verification
@@ -75,6 +75,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|-----------|----------------|--------|-----------|
 | 1. Data Layer | v1.0 | 1/1 | Complete | 2026-02-21 |
 | 2. Static Site | v1.0 | 2/2 | Complete | 2026-02-22 |
-| 3. MCP Foundation | 1/2 | In Progress|  | - |
+| 3. MCP Foundation | 2/2 | Complete   | 2026-02-21 | - |
 | 4. Read Tools | v1.1 | 0/? | Not started | - |
 | 5. Write Tools + Integration | v1.1 | 0/? | Not started | - |

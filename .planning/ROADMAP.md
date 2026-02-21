@@ -75,6 +75,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|-----------|----------------|--------|-----------|
 | 1. Data Layer | v1.0 | 1/1 | Complete | 2026-02-21 |
 | 2. Static Site | v1.0 | 2/2 | Complete | 2026-02-22 |
-| 3. MCP Foundation | 2/2 | Complete   | 2026-02-21 | - |
+| 3. MCP Foundation | 2/2 | Complete    | 2026-02-21 | - |
 | 4. Read Tools | v1.1 | 0/? | Not started | - |
 | 5. Write Tools + Integration | v1.1 | 0/? | Not started | - |

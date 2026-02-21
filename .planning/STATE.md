@@ -5,14 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** When a markdown or JSON file changes, both humans (via the site) and AI tools (via MCP) see the update immediately — no build pipeline, no deploy step, no sync.
-**Current focus:** v2.0 Search + Auth + CRUD
+**Current focus:** v2.0 Search + Auth + CRUD — Phase 6 ready to plan
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 6 of 11 (Site Search + Guide)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-02-22 — Milestone v2.0 started
+Status: Ready to plan
+Last activity: 2026-02-22 — v2.0 roadmap created (6 phases, 23 requirements mapped)
+
+Progress: [░░░░░░░░░░] 0% (v2.0)
 
 ## Performance Metrics
 
@@ -37,12 +39,19 @@ Last activity: 2026-02-22 — Milestone v2.0 started
 
 See PROJECT.md Key Decisions table for full list.
 
+Recent decisions affecting v2.0:
+- Auth method: PAT entry (not full OAuth) — no backend required, appropriate for 1-2 user tool
+- Search library: MiniSearch preferred over FlexSearch — cleaner snippet API for this corpus size
+- Mobile kanban DnD: explicitly out of scope for v2.0 — HTML5 DnD does not fire on iOS/Android
+- MCP doc tools: separate add_doc and edit_doc (not upsert) — descriptions must explicitly exclude each other's use case
+
 ### Blockers/Concerns
 
-- User must set Pages source to "GitHub Actions" in repository Settings > Pages > Source (v1.0 tech debt)
+- [v1.0] User must set Pages source to "GitHub Actions" in repository Settings > Pages > Source
+- [v2.0] GitHub API writes require strict SHA-fetch-before-write discipline — Phase 9 must be verified in isolation before Phase 10 or 11 depend on it
 
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Defining v2.0 requirements
-Resume with: Continue new-milestone workflow (research → requirements → roadmap)
+Stopped at: Roadmap created for v2.0 (Phases 6-11)
+Resume with: `/gsd:plan-phase 6`

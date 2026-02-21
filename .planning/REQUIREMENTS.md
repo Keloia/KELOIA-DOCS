@@ -89,35 +89,35 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SRCH-01 | — | Pending |
-| SRCH-02 | — | Pending |
-| SRCH-03 | — | Pending |
-| SRCH-04 | — | Pending |
-| SRCH-05 | — | Pending |
-| SRCH-06 | — | Pending |
-| AUTH-01 | — | Pending |
-| AUTH-02 | — | Pending |
-| AUTH-03 | — | Pending |
-| AUTH-04 | — | Pending |
-| CRUD-01 | — | Pending |
-| CRUD-02 | — | Pending |
-| CRUD-03 | — | Pending |
-| CRUD-04 | — | Pending |
-| CRUD-05 | — | Pending |
-| CRUD-06 | — | Pending |
-| CRUD-07 | — | Pending |
-| CRUD-08 | — | Pending |
-| KNBN-01 | — | Pending |
-| KNBN-02 | — | Pending |
-| KNBN-03 | — | Pending |
-| GUID-01 | — | Pending |
-| GUID-02 | — | Pending |
+| SRCH-01 | Phase 6 | Pending |
+| SRCH-02 | Phase 6 | Pending |
+| SRCH-03 | Phase 6 | Pending |
+| SRCH-04 | Phase 6 | Pending |
+| GUID-01 | Phase 6 | Pending |
+| GUID-02 | Phase 6 | Pending |
+| SRCH-05 | Phase 7 | Pending |
+| SRCH-06 | Phase 7 | Pending |
+| CRUD-06 | Phase 7 | Pending |
+| CRUD-07 | Phase 7 | Pending |
+| CRUD-08 | Phase 7 | Pending |
+| AUTH-01 | Phase 8 | Pending |
+| AUTH-02 | Phase 8 | Pending |
+| AUTH-03 | Phase 8 | Pending |
+| AUTH-04 | Phase 8 | Pending |
+| CRUD-05 | Phase 9 | Pending |
+| CRUD-01 | Phase 10 | Pending |
+| CRUD-02 | Phase 10 | Pending |
+| CRUD-03 | Phase 10 | Pending |
+| CRUD-04 | Phase 10 | Pending |
+| KNBN-01 | Phase 11 | Pending |
+| KNBN-02 | Phase 11 | Pending |
+| KNBN-03 | Phase 11 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 23 total
-- Mapped to phases: 0
-- Unmapped: 23 ⚠️
+- Mapped to phases: 23
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-22*
-*Last updated: 2026-02-22 after initial definition*
+*Last updated: 2026-02-22 after roadmap creation (v2.0 Phases 6-11)*

@@ -22,7 +22,7 @@ See: `.planning/milestones/v1.0-ROADMAP.md` for full details.
 </details>
 
 - [x] **Phase 3: MCP Foundation** — TypeScript server skeleton, toolchain, and Claude Code registration with provably correct path resolution and zero stdout pollution (completed 2026-02-21)
-- [ ] **Phase 4: Read Tools** — All four read tools registered with domain-namespaced names and action-first descriptions; Claude Code can query docs, kanban, and progress
+- [x] **Phase 4: Read Tools** — All four read tools registered with domain-namespaced names and action-first descriptions; Claude Code can query docs, kanban, and progress (completed 2026-02-22)
 - [ ] **Phase 5: Write Tools + Integration** — Three write tools with Zod validation and atomic writes; README enables a fresh clone to register and run the server
 
 ## Phase Details
@@ -52,10 +52,10 @@ Plans:
   3. Asking Claude to "show the kanban board" invokes `keloia_get_kanban` and returns all columns with their task objects denormalized
   4. Asking Claude to "check milestone progress" invokes `keloia_get_progress` and returns structured milestone data
   5. Calling any read tool with an invalid slug or missing file returns `isError: true` with a clear human-readable message
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
-- [ ] 04-01-PLAN.md — Implement four read tools in read.ts and wire into server.ts
-- [ ] 04-02-PLAN.md — Build, verify tools in Claude Code via natural language queries
+- [x] 04-01-PLAN.md — Implement four read tools in read.ts and wire into server.ts
+- [x] 04-02-PLAN.md — Build, verify tools in Claude Code via natural language queries
 
 ### Phase 5: Write Tools + Integration
 **Goal**: Claude Code can create tasks, move tasks between columns, and update milestone progress — all mutations are Zod-validated, atomically written, and the server is documented so a fresh clone can register and run it
@@ -79,5 +79,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Data Layer | v1.0 | 1/1 | Complete | 2026-02-21 |
 | 2. Static Site | v1.0 | 2/2 | Complete | 2026-02-22 |
 | 3. MCP Foundation | 2/2 | Complete    | 2026-02-21 | - |
-| 4. Read Tools | 1/2 | In Progress|  | - |
+| 4. Read Tools | v1.1 | 2/2 | Complete | 2026-02-22 |
 | 5. Write Tools + Integration | v1.1 | 0/? | Not started | - |

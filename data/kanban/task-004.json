@@ -1,7 +1,7 @@
 {
   "id": "task-004",
   "title": "Add schemaVersion to data files",
-  "column": "Backlog",
+  "column": "Done",
   "description": "Ensure both data/kanban/index.json and data/progress/index.json carry schemaVersion: 1 as the schema anchor field, enabling future consumers to detect and handle schema migrations without breaking changes.",
   "assignee": null
 }

@@ -38,6 +38,7 @@ metrics:
   tasks_total: 3
   files_created: 5
   files_modified: 0
+requirements-completed: [SITE-01, SITE-02, SITE-05, SITE-06, SITE-07, SITE-08]
 ---
 
 # Phase 2 Plan 1: Static Site Shell Summary

@@ -1,7 +1,7 @@
 {
   "id": "task-001",
   "title": "Seed docs directory with markdown files",
-  "column": "Backlog",
+  "column": "Done",
   "description": "Create data/docs/ with architecture.md and value-proposition.md as seed documentation files for the GitHub Pages site and MCP server to serve.",
   "assignee": null
 }

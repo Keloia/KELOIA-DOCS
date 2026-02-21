@@ -2,51 +2,24 @@
 
 ## Overview
 
-A single repo serves project documentation to humans via GitHub Pages and to AI tools via an MCP server. The build order is dictated by shared data schemas: lock the data layer first, then build the static site against real files, then establish the MCP server foundation, then implement read tools, then write tools. Both surfaces read the same filesystem — no sync, no duplication, no deploy step for the site.
+A single repo serves project documentation to humans via GitHub Pages and to AI tools via an MCP server. Both surfaces read the same filesystem — no sync, no duplication, no deploy step for the site.
+
+## Milestones
+
+- ✅ **v1.0 Data Layer + Static Site** — Phases 1-2 (shipped 2026-02-22)
+- 📋 **Next** — Phases 3-5 (MCP server — planned, not started)
 
 ## Phases
 
-**Phase Numbering:**
-- Integer phases (1, 2, 3): Planned milestone work
-- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
+<details>
+<summary>✅ v1.0 Data Layer + Static Site (Phases 1-2) — SHIPPED 2026-02-22</summary>
 
-Decimal phases appear between their surrounding integers in numeric order.
+- [x] **Phase 1: Data Layer** (1/1 plans) — completed 2026-02-21
+- [x] **Phase 2: Static Site** (2/2 plans) — completed 2026-02-22
 
-- [x] **Phase 1: Data Layer** - Seed docs, define JSON schemas, establish repo file structure (completed 2026-02-21)
-- [x] **Phase 2: Static Site** - Complete human-facing SPA with GitHub Pages deploy (completed 2026-02-21)
-- [ ] **Phase 3: MCP Foundation** - Server skeleton with correct transport, logging, and path resolution
-- [ ] **Phase 4: MCP Read Tools** - All read tools verified end-to-end in Claude Code
-- [ ] **Phase 5: MCP Write Tools + Integration** - Write tools with atomic writes and final Claude Code wiring
+See: `.planning/milestones/v1.0-ROADMAP.md` for full details.
 
-## Phase Details
-
-### Phase 1: Data Layer
-**Goal**: The shared filesystem data contracts are locked and populated so both the site and MCP server have stable schemas to build against
-**Depends on**: Nothing (first phase)
-**Requirements**: DATA-01, DATA-02, DATA-03, DATA-04
-**Success Criteria** (what must be TRUE):
-  1. `docs/` directory contains at least one real markdown file viewable in the GitHub UI
-  2. `kanban/board.json` exists with at least one column and one task, and validates against the defined schema
-  3. `progress/tracker.json` exists with at least one milestone and progress entry, and validates against the defined schema
-  4. Both JSON files contain a `schemaVersion: 1` field
-**Plans:** 1/1 plans complete
-Plans:
-- [ ] 01-01-PLAN.md — Seed docs, create kanban and progress schemas with split-file structure
-
-### Phase 2: Static Site
-**Goal**: Reza can open the deployed GitHub Pages URL and read docs, view the kanban board, and check milestone progress — no build step, no local server
-**Depends on**: Phase 1
-**Requirements**: SITE-01, SITE-02, SITE-03, SITE-04, SITE-05, SITE-06, SITE-07, SITE-08
-**Success Criteria** (what must be TRUE):
-  1. Visiting the deployed `github.io/keloia-docs/` URL loads the site without any local build step
-  2. Clicking a doc in the sidebar renders its markdown content in the main area with XSS protection active
-  3. The kanban view shows columns with cards color-coded by priority from `board.json`
-  4. The progress view shows milestone modules with CSS progress bars from `tracker.json`
-  5. Pushing a change to `main` triggers GitHub Actions and the updated site is live within two minutes
-**Plans:** 2/2 plans complete
-Plans:
-- [ ] 02-01-PLAN.md — SPA shell, dark theme, hash routing, doc rendering, docs registry, GitHub Actions deploy
-- [ ] 02-02-PLAN.md — Kanban board view with column color-coding, progress tracker with computed bars, visual verification
+</details>
 
 ### Phase 3: MCP Foundation
 **Goal**: The MCP server connects to Claude Code and shows "connected" status — no tools yet, but the foundation is provably correct
@@ -87,10 +60,10 @@ Plans:
 **Execution Order:**
 Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Data Layer | 1/1 | Complete   | 2026-02-21 |
-| 2. Static Site | 2/2 | Complete   | 2026-02-21 |
-| 3. MCP Foundation | 0/? | Not started | - |
-| 4. MCP Read Tools | 0/? | Not started | - |
-| 5. MCP Write Tools + Integration | 0/? | Not started | - |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1. Data Layer | v1.0 | 1/1 | Complete | 2026-02-21 |
+| 2. Static Site | v1.0 | 2/2 | Complete | 2026-02-22 |
+| 3. MCP Foundation | Next | 0/? | Not started | - |
+| 4. MCP Read Tools | Next | 0/? | Not started | - |
+| 5. MCP Write Tools + Integration | Next | 0/? | Not started | - |

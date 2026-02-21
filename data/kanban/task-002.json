@@ -1,7 +1,7 @@
 {
   "id": "task-002",
   "title": "Define kanban board JSON schema",
-  "column": "Backlog",
+  "column": "Done",
   "description": "Design and implement the split-file kanban structure: one index.json as schema anchor with columns and task registry, plus individual task-NNN.json files with lean schema (id, title, column, description, assignee).",
   "assignee": null
 }

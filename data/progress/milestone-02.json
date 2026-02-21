@@ -2,8 +2,8 @@
   "id": "milestone-02",
   "phase": 2,
   "title": "Static Site",
-  "status": "pending",
-  "tasksTotal": 0,
-  "tasksCompleted": 0,
-  "notes": null
+  "status": "done",
+  "tasksTotal": 6,
+  "tasksCompleted": 6,
+  "notes": "Complete human-facing SPA with docs, kanban board, and progress tracker views deployed via GitHub Pages."
 }

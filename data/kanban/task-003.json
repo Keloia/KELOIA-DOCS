@@ -1,0 +1,7 @@
+{
+  "id": "task-003",
+  "title": "Define progress tracker JSON schema",
+  "column": "Backlog",
+  "description": "Design and implement the split-file progress structure: one index.json as schema anchor with milestone registry, plus individual milestone-NN.json files with schema (id, phase, title, status, tasksTotal, tasksCompleted, notes). No computed percentage stored.",
+  "assignee": null
+}

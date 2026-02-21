@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "docs": [
+    { "slug": "architecture", "title": "Architecture" },
+    { "slug": "value-proposition", "title": "Value Proposition" }
+  ]
+}

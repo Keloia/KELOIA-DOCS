@@ -221,6 +221,109 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); };
+}
+
+/* ============================================================
+   Site Search
+   ============================================================ */
+let searchIndex = null;
+let indexBuilding = false;
+
+async function buildSearchIndex() {
+  if (searchIndex || indexBuilding) return;
+  indexBuilding = true;
+
+  try {
+    const res = await fetch('data/docs/index.json');
+    const data = await res.json();
+    const docs = [...data.docs, { slug: 'mcp-guide', title: 'MCP Setup Guide' }];
+
+    const documents = await Promise.all(
+      docs.map(async doc => {
+        const r = await fetch(`data/docs/${doc.slug}.md`);
+        const text = r.ok ? await r.text() : '';
+        return { id: doc.slug, slug: doc.slug, title: doc.title, text };
+      })
+    );
+
+    const miniSearch = new MiniSearch({ fields: ['title', 'text'], storeFields: ['title', 'slug', 'text'] });
+    miniSearch.addAll(documents);
+    searchIndex = miniSearch;
+  } catch (err) {
+    console.error('Failed to build search index:', err);
+  }
+
+  indexBuilding = false;
+
+  // If the user typed while the index was building, trigger a search now
+  const searchInput = document.getElementById('search-input');
+  if (searchInput && searchInput.value.trim()) {
+    handleSearch(searchInput.value);
+  }
+}
+
+function extractSnippet(text, query, windowSize = 120) {
+  const lowerText = text.toLowerCase();
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  let matchIndex = -1;
+  for (const term of terms) {
+    const idx = lowerText.indexOf(term);
+    if (idx !== -1) { matchIndex = idx; break; }
+  }
+
+  if (matchIndex === -1) {
+    return text.slice(0, windowSize).replace(/\n/g, ' ') + '…';
+  }
+
+  const start = Math.max(0, matchIndex - 40);
+  const end = start + windowSize;
+  let snippet = text.slice(start, end).replace(/\n/g, ' ');
+  if (start > 0) snippet = '…' + snippet;
+  if (end < text.length) snippet = snippet + '…';
+  return snippet;
+}
+
+function renderSearchResults(results, query) {
+  const container = document.getElementById('search-results');
+  if (!results || results.length === 0) {
+    container.hidden = true;
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = results.map(r => `
+    <li class="search-result-item">
+      <a href="#/docs/${escapeHtml(r.slug)}">
+        <span class="result-title">${escapeHtml(r.title)}</span>
+        <span class="result-snippet">${escapeHtml(extractSnippet(r.text, query))}</span>
+      </a>
+    </li>
+  `).join('');
+  container.hidden = false;
+
+  // Add click listeners for immediate visual feedback
+  container.querySelectorAll('.search-result-item a').forEach(link => {
+    link.addEventListener('click', () => {
+      const searchInput = document.getElementById('search-input');
+      if (searchInput) searchInput.value = '';
+      container.hidden = true;
+      container.innerHTML = '';
+    });
+  });
+}
+
+const handleSearch = debounce((query) => {
+  if (!searchIndex || !query.trim()) {
+    renderSearchResults([]);
+    return;
+  }
+  const results = searchIndex.search(query, { prefix: true, boost: { title: 2 }, fuzzy: 0.2, limit: 5 });
+  renderSearchResults(results, query);
+}, 150);
+
 /* ============================================================
    Router
    ============================================================ */
@@ -259,4 +362,21 @@ window.addEventListener('hashchange', router);
 window.addEventListener('DOMContentLoaded', async () => {
   await populateDocList();
   await router();
+
+  // Search event listeners
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) {
+    searchInput.addEventListener('focus', () => buildSearchIndex(), { once: true });
+    searchInput.addEventListener('input', e => handleSearch(e.target.value));
+  }
+
+  // Close search results when clicking outside the search container
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.search-container')) {
+      const searchResults = document.getElementById('search-results');
+      const si = document.getElementById('search-input');
+      if (searchResults) { searchResults.hidden = true; searchResults.innerHTML = ''; }
+      if (si) si.value = '';
+    }
+  });
 });

@@ -9,7 +9,7 @@ Requirements for v2.0 release. Each maps to roadmap phases.
 
 ### Search
 
-- [ ] **SRCH-01**: User can type in a search box at the top of the sidebar to search doc content
+- [x] **SRCH-01**: User can type in a search box at the top of the sidebar to search doc content
 - [ ] **SRCH-02**: Search results update live as user types (debounced)
 - [ ] **SRCH-03**: Search results show doc name and a text snippet with the matching content
 - [ ] **SRCH-04**: User can click a search result to navigate to that doc
@@ -42,8 +42,8 @@ Requirements for v2.0 release. Each maps to roadmap phases.
 
 ### Guide
 
-- [ ] **GUID-01**: MCP setup guide page is accessible from the site navigation
-- [ ] **GUID-02**: Guide includes setup instructions with copy-paste config for Cursor, Claude Code, and Windsurf
+- [x] **GUID-01**: MCP setup guide page is accessible from the site navigation
+- [x] **GUID-02**: Guide includes setup instructions with copy-paste config for Cursor, Claude Code, and Windsurf
 
 ## Future Requirements
 
@@ -89,12 +89,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SRCH-01 | Phase 6 | Pending |
+| SRCH-01 | Phase 6 | Complete |
 | SRCH-02 | Phase 6 | Pending |
 | SRCH-03 | Phase 6 | Pending |
 | SRCH-04 | Phase 6 | Pending |
-| GUID-01 | Phase 6 | Pending |
-| GUID-02 | Phase 6 | Pending |
+| GUID-01 | Phase 6 | Complete |
+| GUID-02 | Phase 6 | Complete |
 | SRCH-05 | Phase 7 | Pending |
 | SRCH-06 | Phase 7 | Pending |
 | CRUD-06 | Phase 7 | Pending |

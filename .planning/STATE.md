@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** When a markdown or JSON file changes, both humans (via the site) and AI tools (via MCP) see the update immediately — no build pipeline, no deploy step, no sync.
-**Current focus:** v2.0 Search + Auth + CRUD — Phase 6 ready to plan
+**Current focus:** v2.0 Search + Auth + CRUD — Phase 6 in progress (Plan 01 complete)
 
 ## Current Position
 
 Phase: 6 of 11 (Site Search + Guide)
-Plan: —
-Status: Ready to plan
-Last activity: 2026-02-22 — v2.0 roadmap created (6 phases, 23 requirements mapped)
+Plan: 1 of 2 complete
+Status: In progress
+Last activity: 2026-02-22 — 06-01 complete (MCP guide page + MiniSearch CDN + search input HTML/CSS)
 
-Progress: [░░░░░░░░░░] 0% (v2.0)
+Progress: [█░░░░░░░░░] ~5% (v2.0)
 
 ## Performance Metrics
 
@@ -45,6 +45,10 @@ Recent decisions affecting v2.0:
 - Mobile kanban DnD: explicitly out of scope for v2.0 — HTML5 DnD does not fire on iOS/Android
 - MCP doc tools: separate add_doc and edit_doc (not upsert) — descriptions must explicitly exclude each other's use case
 
+Phase 6 Plan 01 decisions:
+- mcp-guide excluded from data/docs/index.json — router handles #/docs/mcp-guide directly, avoids duplicate sidebar entries
+- MiniSearch CDN placed before app.js defer tag to ensure MiniSearch global is synchronously available
+
 ### Blockers/Concerns
 
 - [v1.0] User must set Pages source to "GitHub Actions" in repository Settings > Pages > Source
@@ -53,5 +57,5 @@ Recent decisions affecting v2.0:
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Roadmap created for v2.0 (Phases 6-11)
-Resume with: `/gsd:plan-phase 6`
+Stopped at: Completed 06-01-PLAN.md (MCP guide page + MiniSearch CDN + search input HTML/CSS)
+Resume with: `/gsd:execute-phase 6` (Plan 02 — search JS logic)

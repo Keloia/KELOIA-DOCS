@@ -12,7 +12,7 @@ A single repo serves project documentation to humans via GitHub Pages and to AI 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Data Layer** - Seed docs, define JSON schemas, establish repo file structure
+- [x] **Phase 1: Data Layer** - Seed docs, define JSON schemas, establish repo file structure (completed 2026-02-21)
 - [ ] **Phase 2: Static Site** - Complete human-facing SPA with GitHub Pages deploy
 - [ ] **Phase 3: MCP Foundation** - Server skeleton with correct transport, logging, and path resolution
 - [ ] **Phase 4: MCP Read Tools** - All read tools verified end-to-end in Claude Code
@@ -29,7 +29,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. `kanban/board.json` exists with at least one column and one task, and validates against the defined schema
   3. `progress/tracker.json` exists with at least one milestone and progress entry, and validates against the defined schema
   4. Both JSON files contain a `schemaVersion: 1` field
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
 - [ ] 01-01-PLAN.md — Seed docs, create kanban and progress schemas with split-file structure
 
@@ -86,7 +86,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Data Layer | 0/1 | Planned | - |
+| 1. Data Layer | 1/1 | Complete   | 2026-02-21 |
 | 2. Static Site | 0/? | Not started | - |
 | 3. MCP Foundation | 0/? | Not started | - |
 | 4. MCP Read Tools | 0/? | Not started | - |

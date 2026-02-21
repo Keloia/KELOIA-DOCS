@@ -9,10 +9,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Data Layer
 
-- [ ] **DATA-01**: Seed `docs/` directory with existing markdown files (architecture, value proposition)
-- [ ] **DATA-02**: Create `kanban/board.json` with schema: columns array, tasks with id/title/column/priority/assignee/labels/description/dates
-- [ ] **DATA-03**: Create `progress/tracker.json` with schema: milestones with modules, progress percentages, task counts, notes
-- [ ] **DATA-04**: Add `schemaVersion: 1` field to both JSON files for future migration safety
+- [x] **DATA-01**: Seed `docs/` directory with existing markdown files (architecture, value proposition)
+- [x] **DATA-02**: Create `kanban/board.json` with schema: columns array, tasks with id/title/column/priority/assignee/labels/description/dates
+- [x] **DATA-03**: Create `progress/tracker.json` with schema: milestones with modules, progress percentages, task counts, notes
+- [x] **DATA-04**: Add `schemaVersion: 1` field to both JSON files for future migration safety
 
 ### Static Site
 
@@ -84,10 +84,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
-| DATA-03 | Phase 1 | Pending |
-| DATA-04 | Phase 1 | Pending |
+| DATA-01 | Phase 1 | Complete |
+| DATA-02 | Phase 1 | Complete |
+| DATA-03 | Phase 1 | Complete |
+| DATA-04 | Phase 1 | Complete |
 | SITE-01 | Phase 2 | Pending |
 | SITE-02 | Phase 2 | Pending |
 | SITE-03 | Phase 2 | Pending |

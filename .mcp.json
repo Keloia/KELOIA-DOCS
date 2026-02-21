@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "keloia": {
+      "command": "node",
+      "args": ["mcp-server/dist/index.js"],
+      "env": {}
+    }
+  }
+}

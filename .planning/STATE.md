@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** When a markdown or JSON file changes, both humans (via the site) and AI tools (via MCP) see the update immediately — no build pipeline, no deploy step, no sync.
-**Current focus:** Planning next milestone (MCP server)
+**Current focus:** Milestone v1.1 — MCP Server
 
 ## Current Position
 
-Phase: v1.0 complete (Phases 1-2 shipped)
-Next: Phase 3 — MCP Foundation
-Status: Milestone v1.0 archived
-Last activity: 2026-02-22 — v1.0 milestone completed and archived
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-22 — Milestone v1.1 started
 
-Progress: [████████████████████] 100% (v1.0)
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -50,5 +50,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: v1.0 milestone completed and archived
+Stopped at: Starting milestone v1.1 — MCP Server
 Resume file: None

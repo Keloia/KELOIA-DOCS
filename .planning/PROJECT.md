@@ -6,6 +6,16 @@ A single repo that serves Keloia project documentation to humans via a GitHub Pa
 
 The static site is shipped and live: a vanilla JS SPA with hash routing, dark theme, markdown rendering via marked.js + DOMPurify, kanban board with color-coded columns, and progress tracker with computed bars. GitHub Actions deploys on push to main with no build step.
 
+## Current Milestone: v1.1 MCP Server
+
+**Goal:** Claude Code can read all project docs, kanban state, and milestone progress via MCP tools — and create/move tasks and update progress with validated, atomic writes.
+
+**Target features:**
+- MCP server foundation (stdio transport, logging, path resolution)
+- Read tools (list_docs, read_doc, get_kanban, get_progress)
+- Write tools (add_task, move_task, update_progress) with Zod validation and atomic writes
+- Claude Code integration (.mcp.json, README setup)
+
 ## Core Value
 
 When a markdown or JSON file changes, both humans (via the site) and AI tools (via MCP) see the update immediately — no build pipeline, no deploy step, no sync.

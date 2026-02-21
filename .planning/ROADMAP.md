@@ -29,7 +29,9 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. `kanban/board.json` exists with at least one column and one task, and validates against the defined schema
   3. `progress/tracker.json` exists with at least one milestone and progress entry, and validates against the defined schema
   4. Both JSON files contain a `schemaVersion: 1` field
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 01-01-PLAN.md — Seed docs, create kanban and progress schemas with split-file structure
 
 ### Phase 2: Static Site
 **Goal**: Reza can open the deployed GitHub Pages URL and read docs, view the kanban board, and check milestone progress — no build step, no local server
@@ -84,7 +86,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Data Layer | 0/? | Not started | - |
+| 1. Data Layer | 0/1 | Planned | - |
 | 2. Static Site | 0/? | Not started | - |
 | 3. MCP Foundation | 0/? | Not started | - |
 | 4. MCP Read Tools | 0/? | Not started | - |

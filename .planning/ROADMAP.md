@@ -37,7 +37,10 @@ See: `.planning/milestones/v1.0-ROADMAP.md` for full details.
   3. The server appears as "connected" in Claude Code's `/mcp` status (zero tools is acceptable at this stage)
   4. `grep -r "console.log" mcp-server/src/` returns zero results — all logging uses `console.error()`
   5. `REPO_ROOT`, `DOCS_DIR`, `KANBAN_DIR`, and `PROGRESS_DIR` log correct absolute paths to stderr at startup, not paths relative to wherever Claude Code was launched
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 03-01-PLAN.md — MCP server skeleton with TypeScript toolchain, source modules, and build
+- [ ] 03-02-PLAN.md — Claude Code registration via .mcp.json and connection verification
 
 ### Phase 4: Read Tools
 **Goal**: Claude Code can read all project data — documentation, kanban board state, and milestone progress — via MCP tools with descriptions clear enough that Claude selects the correct tool without a prompt hint
@@ -72,6 +75,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|-----------|----------------|--------|-----------|
 | 1. Data Layer | v1.0 | 1/1 | Complete | 2026-02-21 |
 | 2. Static Site | v1.0 | 2/2 | Complete | 2026-02-22 |
-| 3. MCP Foundation | v1.1 | 0/? | Not started | - |
+| 3. MCP Foundation | v1.1 | 0/2 | Not started | - |
 | 4. Read Tools | v1.1 | 0/? | Not started | - |
 | 5. Write Tools + Integration | v1.1 | 0/? | Not started | - |

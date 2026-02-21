@@ -37,26 +37,37 @@ When a markdown or JSON file changes, both humans (via the site) and AI tools (v
 - ✓ .mcp.json config for Claude Code project-scope registration — v1.1
 - ✓ README with setup instructions (clone, install, build, register) — v1.1
 
-### Active
+## Current Milestone: v2.0 Search + Auth + CRUD
 
-(None — next milestone requirements defined via `/gsd:new-milestone`)
+**Goal:** Transform the site from read-only to read-write with GitHub OAuth authentication, add full-text search across both surfaces, interactive kanban, and MCP setup documentation.
+
+**Target features:**
+- Full-text doc search on site (sidebar search box, results with snippets)
+- MCP search tool (keloia_search_docs with regex/filter support)
+- MCP setup guide page (Cursor, Claude Code, Windsurf)
+- GitHub OAuth login for write operations
+- Doc CRUD on site (add, edit via markdown textarea, delete) via GitHub API
+- Doc CRUD MCP tools (add_doc, edit_doc, delete_doc)
+- Interactive kanban with drag-and-drop and confirmation modal (requires login)
+
+### Active
 
 ### Out of Scope
 
 - Frameworks (React, Astro, Docusaurus, VitePress) — zero build step is a hard constraint
 - CSS frameworks (Tailwind, etc.) — adds build step
 - Database (SQLite, D1) — filesystem is the database for <100 tasks
-- Authentication on the site — repo visibility controls access
-- Search across docs — add when >20 docs justify it
+- ~~Authentication on the site~~ — moved to v2.0 (GitHub OAuth)
+- ~~Search across docs~~ — moved to v2.0 (full-text search)
 - GitHub Issues sync — adds external API dependency
 - Testing framework (Jest, Vitest) — tools under 20 lines each, test by using
 - Remote MCP transport in v1 — stdio first, remote when needed
 - WebSocket live updates — requires persistent server; GitHub Pages is static
-- Edit-in-place on site — requires GitHub API auth; beyond current scope
+- ~~Edit-in-place on site~~ — moved to v2.0 (doc CRUD via GitHub API)
 - Column/assignee filters on get_kanban — deferred to v2 (READ-06)
 - Computed percentComplete on get_progress — deferred to v2 (READ-07)
 - Schema version assertion on reads — deferred to v2 (READ-08)
-- keloia_search_docs keyword search — deferred to v2 (MCP-08)
+- ~~keloia_search_docs keyword search~~ — moved to v2.0
 
 ## Context
 
@@ -97,4 +108,4 @@ Both surfaces (site + MCP) read the same `data/` directory — no duplication, n
 | atomicWriteJson (writeFileSync + renameSync) | No partial reads possible under concurrent access | ✓ Good — crash-safe writes |
 
 ---
-*Last updated: 2026-02-22 after v1.1 milestone*
+*Last updated: 2026-02-22 after v2.0 milestone started*

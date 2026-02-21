@@ -5,15 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** When a markdown or JSON file changes, both humans (via the site) and AI tools (via MCP) see the update immediately — no build pipeline, no deploy step, no sync.
-**Current focus:** Planning next milestone
+**Current focus:** v2.0 Search + Auth + CRUD
 
 ## Current Position
 
-Phase: All v1.0 + v1.1 phases complete
-Status: Milestone v1.1 shipped — 7 MCP tools (4 read, 3 write) implemented, verified, documented
-Last activity: 2026-02-22 — v1.1 milestone archived
-
-Progress: [██████████] 100% (v1.0 + v1.1 shipped)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-22 — Milestone v2.0 started
 
 ## Performance Metrics
 
@@ -45,5 +44,5 @@ See PROJECT.md Key Decisions table for full list.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Milestone v1.1 archived
-Resume with: `/gsd:new-milestone` to start next milestone cycle
+Stopped at: Defining v2.0 requirements
+Resume with: Continue new-milestone workflow (research → requirements → roadmap)

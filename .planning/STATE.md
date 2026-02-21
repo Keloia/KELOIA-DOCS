@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 2 of 5 (Static Site)
-Plan: 1 of 2 in current phase
-Status: Phase 2 Plan 1 complete
-Last activity: 2026-02-22 — 02-01 SPA shell, hash router, doc rendering, GitHub Actions deploy
+Plan: 2 of 2 in current phase
+Status: Phase 2 complete
+Last activity: 2026-02-22 — 02-02 Kanban board and progress tracker views complete
 
-Progress: [████░░░░░░] 40%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -28,10 +28,10 @@ Progress: [████░░░░░░] 40%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-data-layer | 1 | 2 min | 2 min |
-| 02-static-site | 1 | 2 min | 2 min |
+| 02-static-site | 2 | ~12 min | ~6 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2 min), 02-01 (2 min)
+- Last 5 plans: 01-01 (2 min), 02-01 (2 min), 02-02 (~10 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -56,6 +56,9 @@ Recent decisions affecting current work:
 - [02-01]: data/docs/index.json as doc registry — serves sidebar population and future MCP list_docs tool
 - [02-01]: Relative fetch paths enforced — no leading slash on any URL for GitHub Pages subdirectory compat
 - [02-01]: CDN scripts have no async/defer — app.js depends on marked and DOMPurify globals being available synchronously
+- [02-02]: Column-based color-coding interprets SITE-03 priority requirement — task schema has no priority field; column membership is semantic equivalent
+- [02-02]: escapeHtml() on all JSON data before innerHTML — JSON data treated as untrusted; consistent with DOMPurify approach for markdown
+- [02-02]: Mobile kanban stacks columns vertically — flex-direction: column on small screens, more usable than horizontal overflow
 
 ### Pending Todos
 
@@ -69,5 +72,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 02-01-PLAN.md — SPA shell, hash router, doc rendering pipeline, GitHub Actions deploy
+Stopped at: Completed 02-02-PLAN.md — Kanban board and progress tracker views, Phase 2 complete
 Resume file: None

@@ -41,7 +41,7 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details.
 - [x] **Phase 7: MCP Search + Doc CRUD Tools** — `keloia_search_docs`, `keloia_add_doc`, `keloia_edit_doc`, `keloia_delete_doc` MCP tools (completed 2026-02-22)
 - [x] **Phase 8: GitHub Auth** — PAT entry modal, localStorage persistence, and auth-gated write UI (completed 2026-02-22)
 - [x] **Phase 9: GitHub API Wrapper** — SHA-aware Contents API wrapper with serialized write queue (completed 2026-02-22)
-- [ ] **Phase 10: Site Doc CRUD** — Authenticated add, edit (with preview), and delete for docs via the GitHub API
+- [x] **Phase 10: Site Doc CRUD** — Authenticated add, edit (with preview), and delete for docs via the GitHub API (completed 2026-02-22)
 - [ ] **Phase 11: Interactive Kanban** — Authenticated drag-and-drop kanban with confirmation modal and GitHub API persistence
 
 ## Phase Details
@@ -110,7 +110,7 @@ Plans:
   2. An authenticated user can open an existing doc in a markdown textarea and save changes — the updated content renders on next view
   3. While editing, the user can toggle a rendered preview of the markdown without leaving the edit view
   4. An authenticated user can delete a doc via a confirmation modal that names the doc title — the doc is removed from the sidebar after deletion
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 10-01-PLAN.md — Edit view with preview toggle + sidebar edit/delete buttons (CRUD-02, CRUD-03)
 - [ ] 10-02-PLAN.md — Create form + delete confirmation modal + New Doc sidebar button (CRUD-01, CRUD-04)
@@ -139,5 +139,5 @@ Plans:
 | 7. MCP Search + Doc CRUD Tools | 1/1 | Complete   | 2026-02-22 | - |
 | 8. GitHub Auth | 1/1 | Complete   | 2026-02-22 | - |
 | 9. GitHub API Wrapper | 1/1 | Complete   | 2026-02-22 | - |
-| 10. Site Doc CRUD | 1/2 | In Progress|  | - |
+| 10. Site Doc CRUD | 2/2 | Complete   | 2026-02-22 | - |
 | 11. Interactive Kanban | v2.0 | 0/TBD | Not started | - |

@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** When a markdown or JSON file changes, both humans (via the site) and AI tools (via MCP) see the update immediately — no build pipeline, no deploy step, no sync.
-**Current focus:** v2.0 Search + Auth + CRUD — Phase 10 plan 01 complete, Plan 02 next
+**Current focus:** v2.0 Search + Auth + CRUD — Phase 10 complete (both plans done), Phase 11 next
 
 ## Current Position
 
 Phase: 10 of 11 (Site Doc CRUD)
-Plan: 1 of 2 complete
-Status: In progress
-Last activity: 2026-02-22 — 10-01 complete (Edit view with textarea pre-fill, preview toggle, writeFile save, auth-gated sidebar edit/delete buttons)
+Plan: 2 of 2 complete
+Status: Phase complete
+Last activity: 2026-02-22 — 10-02 complete (Create view with slug validation + two-step write, delete modal with title confirmation + two-step delete, New Doc button auth-gated in sidebar)
 
-Progress: [██████░░░░] ~50% (v2.0)
+Progress: [████████░░] ~80% (v2.0)
 
 ## Performance Metrics
 
@@ -36,7 +36,7 @@ Progress: [██████░░░░] ~50% (v2.0)
 | 07-mcp-search-crud | 1 | ~4 min | ~4 min |
 | 08-github-auth | 1 | ~3 min | ~3 min |
 | 09-github-api-wrapper | 1 | ~1 min | ~1 min |
-| 10-site-doc-crud | 1 (of 2) | ~1 min | ~1 min |
+| 10-site-doc-crud | 2 (of 2) | ~3 min | ~1.5 min |
 
 ## Accumulated Context
 
@@ -55,6 +55,9 @@ Phase 10 decisions:
 - Set textarea.value after innerHTML assignment — never use innerHTML or template literals for textarea content (anti-pattern per RESEARCH.md)
 - Hide textarea during preview (textarea.hidden = true) instead of destroying it — preserves .value without re-fetch
 - showDeleteModal stub uses alert() — Plan 02 replaces with full modal implementation
+- Two-step write order for create: .md file first, then index.json — safe failure mode if second write fails
+- renderCreateView uses getFile (GitHub API) for duplicate slug check — ensures fresh SHA data for subsequent writeFile
+- modal-error paragraph reuses .form-error class — consistent error styling without new class
 
 Phase 9 decisions:
 - Plain function declarations used in github.js for global exposure — no window.x assignment needed
@@ -88,5 +91,5 @@ Phase 6 decisions:
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 10-01-PLAN.md (Edit view: renderEditView, router subview extension, auth-gated sidebar edit/delete buttons, CSS)
-Resume with: `/gsd:execute-phase 10` (Phase 10 — Doc CRUD, Plan 02: create view + real delete modal)
+Stopped at: Completed 10-02-PLAN.md (Create view: renderCreateView, showDeleteModal with confirmation modal, New Doc sidebar button, form/modal CSS)
+Resume with: `/gsd:execute-phase 11` (Phase 11 — next phase)

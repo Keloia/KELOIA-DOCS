@@ -2,8 +2,8 @@
   "id": "app-milestone-06",
   "phase": 6,
   "title": "WA BFF: Conversation State",
-  "status": "not-started",
+  "status": "done",
   "tasksTotal": 7,
-  "tasksCompleted": 0,
-  "notes": "Durable Object, reply classification, confirm-before-log, outbound client"
+  "tasksCompleted": 7,
+  "notes": "ConversationState DO (RPC-style, 10-turn cap, 30min pending TTL), reply classification (button + Indonesian free-text), message router (pending vs fresh), action execution via Service Binding, WA outbound client (Meta Graph API v21.0), outbound queue consumer with retry, status handler. 75 tests passing (45 new + 30 existing)."
 }

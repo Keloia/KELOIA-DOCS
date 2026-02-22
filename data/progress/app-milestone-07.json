@@ -2,8 +2,8 @@
   "id": "app-milestone-07",
   "phase": 7,
   "title": "AI Processor",
-  "status": "not-started",
+  "status": "done",
   "tasksTotal": 6,
-  "tasksCompleted": 0,
-  "notes": "Queue consumer, Claude prompt, intent extraction, Zod parsing, error handling"
+  "tasksCompleted": 6,
+  "notes": "Queue consumer entry point, Claude intent extraction pipeline with Indonesian system prompt, Zod schema validation, confidence-based delivery routing (confirm/clarify/read-query/general), WA BFF internal routes for conversation state updates, error handling with retryable detection. 24 tests passing."
 }

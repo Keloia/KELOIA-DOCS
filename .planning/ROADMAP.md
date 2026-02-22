@@ -39,7 +39,7 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details.
 
 - [x] **Phase 6: Site Search + Guide** — Full-text doc search in the sidebar and static MCP setup guide page (completed 2026-02-21)
 - [x] **Phase 7: MCP Search + Doc CRUD Tools** — `keloia_search_docs`, `keloia_add_doc`, `keloia_edit_doc`, `keloia_delete_doc` MCP tools (completed 2026-02-22)
-- [ ] **Phase 8: GitHub Auth** — PAT entry modal, localStorage persistence, and auth-gated write UI
+- [x] **Phase 8: GitHub Auth** — PAT entry modal, localStorage persistence, and auth-gated write UI (completed 2026-02-22)
 - [ ] **Phase 9: GitHub API Wrapper** — SHA-aware Contents API wrapper with serialized write queue
 - [ ] **Phase 10: Site Doc CRUD** — Authenticated add, edit (with preview), and delete for docs via the GitHub API
 - [ ] **Phase 11: Interactive Kanban** — Authenticated drag-and-drop kanban with confirmation modal and GitHub API persistence
@@ -84,7 +84,7 @@ Plans:
   2. The token persists in localStorage across browser sessions — closing and reopening the tab does not require re-entry
   3. Clicking logout clears the token and returns the UI to unauthenticated state
   4. Edit, add, delete, and drag-and-drop controls are hidden when not authenticated and appear when authenticated
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
 - [ ] 08-01-PLAN.md — Auth HTML/CSS + JS logic (sidebar login form, token verification, localStorage persistence, CSS auth gating)
 
@@ -132,7 +132,7 @@ Plans:
 | 5. Write Tools + Integration | v1.1 | 3/3 | Complete | 2026-02-22 |
 | 6. Site Search + Guide | 2/2 | Complete    | 2026-02-21 | - |
 | 7. MCP Search + Doc CRUD Tools | 1/1 | Complete   | 2026-02-22 | - |
-| 8. GitHub Auth | v2.0 | 0/1 | Not started | - |
+| 8. GitHub Auth | 1/1 | Complete   | 2026-02-22 | - |
 | 9. GitHub API Wrapper | v2.0 | 0/TBD | Not started | - |
 | 10. Site Doc CRUD | v2.0 | 0/TBD | Not started | - |
 | 11. Interactive Kanban | v2.0 | 0/TBD | Not started | - |

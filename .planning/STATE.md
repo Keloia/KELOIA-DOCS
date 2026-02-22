@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** When a markdown or JSON file changes, both humans (via the site) and AI tools (via MCP) see the update immediately — no build pipeline, no deploy step, no sync.
-**Current focus:** v2.0 Search + Auth + CRUD — Phase 7 plan 01 complete, Phase 8 next
+**Current focus:** v2.0 Search + Auth + CRUD — Phase 8 plan 01 complete, Phase 9 next
 
 ## Current Position
 
-Phase: 7 of 11 (MCP Search + CRUD)
+Phase: 8 of 11 (GitHub Auth)
 Plan: 1 of 1 complete
 Status: Phase complete
-Last activity: 2026-02-22 — 07-01 complete (MCP doc tools: keloia_search_docs, keloia_add_doc, keloia_edit_doc, keloia_delete_doc)
+Last activity: 2026-02-22 — 08-01 complete (GitHub PAT auth: verifyToken, setAuthState, initAuth, login/logout handlers, CSS gating)
 
-Progress: [███░░░░░░░] ~15% (v2.0)
+Progress: [████░░░░░░] ~25% (v2.0)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11 (3 in v1.0, 7 in v1.1, 1 in v2.0)
+- Total plans completed: 12 (3 in v1.0, 7 in v1.1, 2 in v2.0)
 - Average duration: ~4 min
-- Total execution time: ~43 min
+- Total execution time: ~46 min
 
 **By Phase:**
 
@@ -34,6 +34,7 @@ Progress: [███░░░░░░░] ~15% (v2.0)
 | 05-write-tools | 3 | ~15 min | ~5 min |
 | 06-site-search-guide | 2 | ~9 min | ~4.5 min |
 | 07-mcp-search-crud | 1 | ~4 min | ~4 min |
+| 08-github-auth | 1 | ~3 min | ~3 min |
 
 ## Accumulated Context
 
@@ -46,6 +47,12 @@ Recent decisions affecting v2.0:
 - Search library: MiniSearch preferred over FlexSearch — cleaner snippet API for this corpus size
 - Mobile kanban DnD: explicitly out of scope for v2.0 — HTML5 DnD does not fire on iOS/Android
 - MCP doc tools: separate add_doc and edit_doc (not upsert) — descriptions must explicitly exclude each other's use case
+
+Phase 8 decisions:
+- verifyToken omits X-GitHub-Api-Version header — avoids CORS preflight on browser fetch
+- initAuth() called non-blocking (no await) — page renders immediately, auth state resolves in background
+- getAuthToken() exposed as module-level function — Phase 9 can access Bearer token without coupling
+- CSS gating via body.authenticated class + stylesheet rules rather than JS show/hide
 
 Phase 7 decisions:
 - atomicWriteText duplicated locally in docs.ts rather than imported from write.ts — keeps modules independent, no circular dependency
@@ -67,5 +74,5 @@ Phase 6 decisions:
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 07-01-PLAN.md (MCP doc tools: keloia_search_docs, keloia_add_doc, keloia_edit_doc, keloia_delete_doc registered in server.ts)
-Resume with: `/gsd:execute-phase 8` (Phase 8 — Auth)
+Stopped at: Completed 08-01-PLAN.md (GitHub PAT auth: verifyToken, setAuthState, getAuthToken, initAuth, login/logout handlers, body.authenticated CSS gating)
+Resume with: `/gsd:execute-phase 9` (Phase 9 — GitHub API wrapper)

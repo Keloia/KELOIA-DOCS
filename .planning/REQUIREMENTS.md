@@ -18,10 +18,10 @@ Requirements for v2.0 release. Each maps to roadmap phases.
 
 ### Authentication
 
-- [ ] **AUTH-01**: User can enter a GitHub Personal Access Token to authenticate
-- [ ] **AUTH-02**: Token is stored in localStorage and persists across sessions
-- [ ] **AUTH-03**: User can log out (clears stored token)
-- [ ] **AUTH-04**: Write UI controls (edit, add, delete, drag) are hidden when not authenticated
+- [x] **AUTH-01**: User can enter a GitHub Personal Access Token to authenticate
+- [x] **AUTH-02**: Token is stored in localStorage and persists across sessions
+- [x] **AUTH-03**: User can log out (clears stored token)
+- [x] **AUTH-04**: Write UI controls (edit, add, delete, drag) are hidden when not authenticated
 
 ### Doc CRUD
 
@@ -100,10 +100,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CRUD-06 | Phase 7 | Complete |
 | CRUD-07 | Phase 7 | Complete |
 | CRUD-08 | Phase 7 | Complete |
-| AUTH-01 | Phase 8 | Pending |
-| AUTH-02 | Phase 8 | Pending |
-| AUTH-03 | Phase 8 | Pending |
-| AUTH-04 | Phase 8 | Pending |
+| AUTH-01 | Phase 8 | Complete |
+| AUTH-02 | Phase 8 | Complete |
+| AUTH-03 | Phase 8 | Complete |
+| AUTH-04 | Phase 8 | Complete |
 | CRUD-05 | Phase 9 | Pending |
 | CRUD-01 | Phase 10 | Pending |
 | CRUD-02 | Phase 10 | Pending |

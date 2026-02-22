@@ -1,7 +1,17 @@
 {
   "schemaVersion": 1,
   "docs": [
-    { "slug": "architecture", "title": "Architecture" },
-    { "slug": "value-proposition", "title": "Value Proposition" }
+    {
+      "slug": "architecture",
+      "title": "Architecture"
+    },
+    {
+      "slug": "value-proposition",
+      "title": "Value Proposition"
+    },
+    {
+      "slug": "mcp-guide",
+      "title": "MCP Setup Guide"
+    }
   ]
 }

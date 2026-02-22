@@ -1,17 +1,77 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "projects": [
+    {
+      "id": "keloia",
+      "name": "Keloia",
+      "description": "Main application — WhatsApp-first bus operations platform"
+    },
+    {
+      "id": "keloia-docs",
+      "name": "Keloia Docs",
+      "description": "Documentation site + MCP server"
+    }
+  ],
   "docs": [
     {
-      "slug": "architecture",
-      "title": "Architecture"
+      "slug": "keloia/architecture",
+      "title": "System Architecture",
+      "project": "keloia"
     },
     {
-      "slug": "value-proposition",
-      "title": "Value Proposition"
+      "slug": "keloia/library-architecture",
+      "title": "Library & Tech Stack",
+      "project": "keloia"
     },
     {
-      "slug": "mcp-guide",
-      "title": "MCP Setup Guide"
+      "slug": "keloia/value-proposition",
+      "title": "Value Proposition",
+      "project": "keloia"
+    },
+    {
+      "slug": "keloia/core-domain-deep-dive",
+      "title": "Core Domain Deep Dive",
+      "project": "keloia"
+    },
+    {
+      "slug": "keloia/wa-bff-deep-dive",
+      "title": "WhatsApp BFF Deep Dive",
+      "project": "keloia"
+    },
+    {
+      "slug": "keloia/dashboard-bff-deep-dive",
+      "title": "Dashboard BFF Deep Dive",
+      "project": "keloia"
+    },
+    {
+      "slug": "keloia/ai-processor-deep-dive",
+      "title": "AI Processor Deep Dive",
+      "project": "keloia"
+    },
+    {
+      "slug": "keloia/dashboard-ui-deep-dive",
+      "title": "Dashboard UI Deep Dive",
+      "project": "keloia"
+    },
+    {
+      "slug": "keloia/onboarding-deep-dive",
+      "title": "Onboarding Flow Deep Dive",
+      "project": "keloia"
+    },
+    {
+      "slug": "keloia/testing-deep-dive",
+      "title": "Testing Strategy Deep Dive",
+      "project": "keloia"
+    },
+    {
+      "slug": "keloia-docs/mcp-guide",
+      "title": "MCP Setup Guide",
+      "project": "keloia-docs"
+    },
+    {
+      "slug": "keloia-docs/tech-stack",
+      "title": "Tech Stack Decisions",
+      "project": "keloia-docs"
     }
   ]
 }

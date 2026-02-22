@@ -38,17 +38,47 @@ async function populateDocList() {
     const data = await res.json();
 
     const docList = document.getElementById('doc-list');
-    docList.innerHTML = data.docs.map(doc => `
-      <li class="doc-list-item">
-        <a href="#/docs/${doc.slug}" data-view="docs" data-slug="${doc.slug}">
-          ${escapeHtml(doc.title)}
-        </a>
-        <span class="doc-actions auth-only">
-          <button class="btn-icon" data-action="edit" data-slug="${doc.slug}" title="Edit">&#9999;</button>
-          <button class="btn-icon btn-danger-icon" data-action="delete" data-slug="${doc.slug}" data-title="${escapeHtml(doc.title)}" title="Delete">&#x2715;</button>
-        </span>
-      </li>
-    `).join('');
+
+    // Group docs by project
+    const projects = data.projects || [];
+    const docsByProject = {};
+    for (const doc of data.docs) {
+      const proj = doc.project || 'other';
+      if (!docsByProject[proj]) docsByProject[proj] = [];
+      docsByProject[proj].push(doc);
+    }
+
+    let html = '';
+    for (const proj of projects) {
+      const projectDocs = docsByProject[proj.id] || [];
+      if (projectDocs.length === 0) continue;
+      html += `<li class="doc-project-header">${escapeHtml(proj.name)}</li>`;
+      html += projectDocs.map(doc => `
+        <li class="doc-list-item">
+          <a href="#/docs/${doc.slug}" data-view="docs" data-slug="${doc.slug}">
+            ${escapeHtml(doc.title)}
+          </a>
+          <span class="doc-actions auth-only">
+            <button class="btn-icon" data-action="edit" data-slug="${doc.slug}" title="Edit">&#9999;</button>
+            <button class="btn-icon btn-danger-icon" data-action="delete" data-slug="${doc.slug}" data-title="${escapeHtml(doc.title)}" title="Delete">&#x2715;</button>
+          </span>
+        </li>
+      `).join('');
+    }
+
+    // Render any ungrouped docs
+    const ungrouped = docsByProject['other'] || [];
+    if (ungrouped.length > 0) {
+      html += ungrouped.map(doc => `
+        <li class="doc-list-item">
+          <a href="#/docs/${doc.slug}" data-view="docs" data-slug="${doc.slug}">
+            ${escapeHtml(doc.title)}
+          </a>
+        </li>
+      `).join('');
+    }
+
+    docList.innerHTML = html;
 
     docList.addEventListener('click', e => {
       const btn = e.target.closest('[data-action]');
@@ -886,11 +916,20 @@ function renderMcp() {
 async function router() {
   const hash = window.location.hash || '#/docs';
   // Strip the leading '#' then split on '/'
-  // hash: '#/docs/architecture' => parts: ['', 'docs', 'architecture']
+  // hash: '#/docs/keloia/architecture' => parts: ['', 'docs', 'keloia', 'architecture']
   const parts = hash.slice(1).split('/');
   const view = parts[1] || 'docs';
-  const param = parts[2] || null;
-  const subview = parts[3] || null;
+  // Support project/slug paths: #/docs/keloia/architecture or flat #/docs/new
+  let param = null;
+  let subview = null;
+  if (parts.length >= 4 && view === 'docs') {
+    // Project-based slug: parts[2]/parts[3] (e.g., keloia/architecture)
+    param = parts[2] + '/' + parts[3];
+    subview = parts[4] || null;
+  } else {
+    param = parts[2] || null;
+    subview = parts[3] || null;
+  }
 
   // Clear search state on navigation
   const searchInput = document.getElementById('search-input');

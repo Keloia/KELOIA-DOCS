@@ -43,7 +43,7 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details.
 - [x] **Phase 9: GitHub API Wrapper** — SHA-aware Contents API wrapper with serialized write queue (completed 2026-02-22)
 - [x] **Phase 10: Site Doc CRUD** — Authenticated add, edit (with preview), and delete for docs via the GitHub API (completed 2026-02-22)
 - [x] **Phase 11: Interactive Kanban** — Authenticated drag-and-drop kanban with confirmation modal and GitHub API persistence (completed 2026-02-22)
-- [ ] **Phase 12: Cross-Phase Integration Fixes** — Search index invalidation after CRUD, edit route auth guard, script load order, mcp-guide MCP access
+- [x] **Phase 12: Cross-Phase Integration Fixes** — Search index invalidation after CRUD, edit route auth guard, script load order, mcp-guide MCP access (completed 2026-02-22)
 
 ## Phase Details
 
@@ -141,7 +141,7 @@ Plans:
   4. Navigating to `#/docs/any-slug/edit` while unauthenticated redirects to the doc view (not the edit form)
   5. `github.js` loads before `app.js` in `index.html` — no `ReferenceError` risk on eager invocation
   6. MCP tool `keloia_search_docs` can find content in `mcp-guide.md`
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
 - [ ] 12-01-PLAN.md — Search index invalidation, edit route auth guard, script order fix, mcp-guide in index.json
 
@@ -160,4 +160,4 @@ Plans:
 | 9. GitHub API Wrapper | 1/1 | Complete   | 2026-02-22 | - |
 | 10. Site Doc CRUD | 2/2 | Complete    | 2026-02-22 | - |
 | 11. Interactive Kanban | 1/1 | Complete    | 2026-02-22 | - |
-| 12. Cross-Phase Integration Fixes | 0/1 | Pending | - | - |
+| 12. Cross-Phase Integration Fixes | 1/1 | Complete   | 2026-02-22 | - |

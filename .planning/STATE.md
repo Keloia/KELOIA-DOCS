@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** When a markdown or JSON file changes, both humans (via the site) and AI tools (via MCP) see the update immediately — no build pipeline, no deploy step, no sync.
-**Current focus:** v2.0 Search + Auth + CRUD — Phase 10 complete (both plans done), Phase 11 next
+**Current focus:** v2.0 Search + Auth + CRUD — Phase 12 complete (all integration gaps closed)
 
 ## Current Position
 
-Phase: 11 of 11 (Interactive Kanban)
+Phase: 12 of 12 (Cross-Phase Integration Fixes)
 Plan: 1 of 1 complete
 Status: Phase complete
-Last activity: 2026-02-22 — 11-01 complete (HTML5 drag-and-drop on kanban cards: wireDragAndDrop, showMoveModal, drag feedback CSS, auth-gated draggable attributes)
+Last activity: 2026-02-22 — 12-01 complete (search index invalidation in 3 CRUD paths, edit route auth guard, script load order fix, mcp-guide added to index.json)
 
-Progress: [██████████] ~100% (v2.0)
+Progress: [████████████] ~100% (v2.0 + integration fixes)
 
 ## Performance Metrics
 
@@ -50,6 +50,12 @@ Recent decisions affecting v2.0:
 - Search library: MiniSearch preferred over FlexSearch — cleaner snippet API for this corpus size
 - Mobile kanban DnD: explicitly out of scope for v2.0 — HTML5 DnD does not fire on iOS/Android
 - MCP doc tools: separate add_doc and edit_doc (not upsert) — descriptions must explicitly exclude each other's use case
+
+Phase 12 decisions:
+- searchIndex = null must be paired with buildSearchIndex() immediately after in each CRUD success path — { once: true } focus listener fires only once; null index alone never rebuilds
+- return (not break) after auth redirect in router edit branch — hashchange fires async so current invocation must be explicitly stopped
+- Remove entire Resources sidebar section (not just mcp-guide li) — section only contained mcp-guide, now rendered naturally by populateDocList()
+- const docs = data.docs (no spread) in buildSearchIndex — index.json is single source of truth for all docs including mcp-guide
 
 Phase 11 decisions:
 - wireDragAndDrop uses closure state (draggedTaskId/Title/SourceColumn) reset on dragend — avoids stale state if drag cancelled
@@ -98,5 +104,5 @@ Phase 6 decisions:
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 11-01-PLAN.md (Interactive kanban: wireDragAndDrop, showMoveModal, drag feedback CSS — v2.0 complete)
-Resume with: v2.0 complete — no remaining phases
+Stopped at: Completed 12-01-PLAN.md (Cross-phase integration fixes: search index invalidation, edit route auth guard, script load order, mcp-guide in index.json — all gaps closed)
+Resume with: All phases complete — v2.0 + integration gaps fully resolved

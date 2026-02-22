@@ -39,12 +39,28 @@ async function populateDocList() {
 
     const docList = document.getElementById('doc-list');
     docList.innerHTML = data.docs.map(doc => `
-      <li>
+      <li class="doc-list-item">
         <a href="#/docs/${doc.slug}" data-view="docs" data-slug="${doc.slug}">
           ${escapeHtml(doc.title)}
         </a>
+        <span class="doc-actions auth-only">
+          <button class="btn-icon" data-action="edit" data-slug="${doc.slug}" title="Edit">&#9999;</button>
+          <button class="btn-icon btn-danger-icon" data-action="delete" data-slug="${doc.slug}" data-title="${escapeHtml(doc.title)}" title="Delete">&#x2715;</button>
+        </span>
       </li>
     `).join('');
+
+    docList.addEventListener('click', e => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (btn.dataset.action === 'edit') {
+        window.location.hash = '#/docs/' + btn.dataset.slug + '/edit';
+      } else if (btn.dataset.action === 'delete') {
+        showDeleteModal(btn.dataset.slug, btn.dataset.title);
+      }
+    });
   } catch (err) {
     console.error('Failed to populate doc list:', err);
   }
@@ -371,6 +387,84 @@ const handleSearch = debounce((query) => {
 }, 150);
 
 /* ============================================================
+   Doc Edit View
+   ============================================================ */
+async function renderEditView(slug) {
+  const res = await fetch(`data/docs/${slug}.md`);
+  if (!res.ok) {
+    mainEl.innerHTML = '<p>Document not found.</p>';
+    return;
+  }
+  const markdown = await res.text();
+
+  mainEl.innerHTML = `
+    <div class="edit-view">
+      <div class="edit-toolbar">
+        <button id="save-btn" class="btn-action">Save</button>
+        <button id="preview-toggle-btn" class="btn-action btn-secondary">Preview</button>
+        <button id="cancel-btn" class="btn-action btn-secondary">Cancel</button>
+      </div>
+      <textarea id="edit-textarea" class="edit-textarea"></textarea>
+      <div id="edit-preview" class="edit-preview" hidden></div>
+    </div>
+  `;
+
+  // Set value AFTER innerHTML — never use innerHTML or template literal to set textarea content
+  document.getElementById('edit-textarea').value = markdown;
+
+  let previewing = false;
+  const textarea = document.getElementById('edit-textarea');
+  const preview = document.getElementById('edit-preview');
+  const previewBtn = document.getElementById('preview-toggle-btn');
+
+  previewBtn.addEventListener('click', () => {
+    previewing = !previewing;
+    if (previewing) {
+      const rawHtml = marked.parse(textarea.value);
+      preview.innerHTML = DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
+      textarea.hidden = true;
+      preview.hidden = false;
+      previewBtn.textContent = 'Edit';
+    } else {
+      textarea.hidden = false;
+      preview.hidden = true;
+      previewBtn.textContent = 'Preview';
+    }
+  });
+
+  document.getElementById('cancel-btn').addEventListener('click', () => {
+    window.location.hash = '#/docs/' + slug;
+  });
+
+  document.getElementById('save-btn').addEventListener('click', async () => {
+    const saveBtn = document.getElementById('save-btn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+    try {
+      await writeFile('data/docs/' + slug + '.md', textarea.value, 'docs: update ' + slug);
+      window.location.hash = '#/docs/' + slug;
+    } catch (err) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save';
+      // Show inline error
+      let errEl = document.getElementById('edit-save-error');
+      if (!errEl) {
+        errEl = document.createElement('p');
+        errEl.id = 'edit-save-error';
+        errEl.className = 'edit-error';
+        document.querySelector('.edit-toolbar').after(errEl);
+      }
+      errEl.textContent = 'Save failed. Check your connection and try again.';
+    }
+  });
+}
+
+function showDeleteModal(slug, title) {
+  // Stub — Plan 02 implements the real delete modal
+  alert('Delete ' + title + '? (coming in next plan)');
+}
+
+/* ============================================================
    Router
    ============================================================ */
 async function router() {
@@ -380,6 +474,7 @@ async function router() {
   const parts = hash.slice(1).split('/');
   const view = parts[1] || 'docs';
   const param = parts[2] || null;
+  const subview = parts[3] || null;
 
   // Clear search state on navigation
   const searchInput = document.getElementById('search-input');
@@ -389,8 +484,18 @@ async function router() {
 
   switch (view) {
     case 'docs':
-      await renderDoc(param);
-      updateActiveNav('docs', param);
+      if (param === 'new') {
+        // Plan 02 will implement renderCreateView — stub for now
+        mainEl.innerHTML = '<p>Create view coming soon.</p>';
+        updateActiveNav('docs', null);
+      } else if (subview === 'edit' && param) {
+        await renderEditView(param);
+        updateActiveNav('docs', param);
+        break;
+      } else {
+        await renderDoc(param);
+        updateActiveNav('docs', param);
+      }
       break;
     case 'kanban':
       renderKanban();

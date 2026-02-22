@@ -1,4 +1,33 @@
 {
   "schemaVersion": 1,
-  "milestones": ["milestone-01", "milestone-02", "milestone-03", "milestone-04", "milestone-05", "milestone-06", "milestone-07", "milestone-08", "milestone-09", "milestone-10", "milestone-11", "milestone-12"]
+  "milestones": [
+    "milestone-01",
+    "milestone-02",
+    "milestone-03",
+    "milestone-04",
+    "milestone-05",
+    "milestone-06",
+    "milestone-07",
+    "milestone-08",
+    "milestone-09",
+    "milestone-10",
+    "milestone-11",
+    "milestone-12",
+    "app-milestone-01",
+    "app-milestone-02",
+    "app-milestone-03",
+    "app-milestone-04",
+    "app-milestone-05",
+    "app-milestone-06",
+    "app-milestone-07",
+    "app-milestone-08",
+    "app-milestone-09",
+    "app-milestone-10",
+    "app-milestone-11",
+    "app-milestone-12",
+    "app-milestone-13",
+    "app-milestone-14",
+    "app-milestone-15",
+    "app-milestone-16"
+  ]
 }

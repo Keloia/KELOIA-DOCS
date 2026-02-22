@@ -1,0 +1,7 @@
+{
+  "id": "app-task-008",
+  "title": "Dashboard BFF — auth and API routes",
+  "column": "Backlog",
+  "description": "Scaffold dashboard-bff Worker, implement WhatsApp OTP auth flow, session middleware (KV-backed), RBAC middleware, API routes proxying to core-domain via Service Binding, Hono AppType export for RPC.",
+  "assignee": null
+}

@@ -1,0 +1,9 @@
+{
+  "id": "app-milestone-08",
+  "phase": 8,
+  "title": "Dashboard BFF",
+  "status": "not-started",
+  "tasksTotal": 7,
+  "tasksCompleted": 0,
+  "notes": "WhatsApp OTP auth, sessions, RBAC, API routes, Service Binding proxy"
+}

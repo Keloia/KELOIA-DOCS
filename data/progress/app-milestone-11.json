@@ -1,0 +1,9 @@
+{
+  "id": "app-milestone-11",
+  "phase": 11,
+  "title": "PDF Trip Confirmations",
+  "status": "not-started",
+  "tasksTotal": 4,
+  "tasksCompleted": 0,
+  "notes": "PDF generation, R2 storage, dashboard download, WhatsApp sharing"
+}

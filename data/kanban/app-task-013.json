@@ -1,0 +1,7 @@
+{
+  "id": "app-task-013",
+  "title": "Proactive morning briefings",
+  "column": "Backlog",
+  "description": "Activate cron trigger (5 AM WIB), role-specific briefing builder (driver/admin/owner views), briefing opt-out capability.",
+  "assignee": null
+}

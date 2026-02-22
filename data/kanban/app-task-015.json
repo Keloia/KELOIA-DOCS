@@ -1,0 +1,7 @@
+{
+  "id": "app-task-015",
+  "title": "Maintenance tracking and alerts",
+  "column": "Backlog",
+  "description": "Scheduled maintenance-due evaluation, permit expiry alerts, fleet health dashboard view with maintenance timeline.",
+  "assignee": null
+}

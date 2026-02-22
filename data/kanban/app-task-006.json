@@ -1,0 +1,7 @@
+{
+  "id": "app-task-006",
+  "title": "WhatsApp BFF — conversation state and confirm-before-log",
+  "column": "Backlog",
+  "description": "Implement ConversationState Durable Object, reply classification (button + free-text Indonesian), message router (pending vs fresh), action execution via Service Binding, outbound WA client, and confirmation prompt formatting.",
+  "assignee": null
+}

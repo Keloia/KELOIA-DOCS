@@ -1,0 +1,9 @@
+{
+  "id": "app-milestone-13",
+  "phase": 13,
+  "title": "Morning Briefings",
+  "status": "not-started",
+  "tasksTotal": 3,
+  "tasksCompleted": 0,
+  "notes": "Cron trigger, role-specific briefings, opt-out"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "app-milestone-01",
+  "phase": 1,
+  "title": "Monorepo Foundation",
+  "status": "not-started",
+  "tasksTotal": 5,
+  "tasksCompleted": 0,
+  "notes": "pnpm workspaces, Turborepo, shared Drizzle schema, Zod schemas, D1 migration"
+}

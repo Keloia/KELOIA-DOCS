@@ -1,0 +1,7 @@
+{
+  "id": "app-task-005",
+  "title": "WhatsApp BFF — webhook and message pipeline",
+  "column": "Backlog",
+  "description": "Scaffold wa-bff Worker, implement webhook verification (HMAC-SHA256), payload normalization, phone resolution (KV lookup), message deduplication (24h TTL), rate limiting (10/min), and inbound handler orchestration.",
+  "assignee": null
+}

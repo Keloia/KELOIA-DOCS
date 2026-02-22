@@ -1,0 +1,9 @@
+{
+  "id": "app-milestone-06",
+  "phase": 6,
+  "title": "WA BFF: Conversation State",
+  "status": "not-started",
+  "tasksTotal": 7,
+  "tasksCompleted": 0,
+  "notes": "Durable Object, reply classification, confirm-before-log, outbound client"
+}

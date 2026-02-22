@@ -1,0 +1,9 @@
+{
+  "id": "app-milestone-10",
+  "phase": 10,
+  "title": "Integration & MVP Launch",
+  "status": "not-started",
+  "tasksTotal": 7,
+  "tasksCompleted": 0,
+  "notes": "E2E tests, seed data, Cloudflare config, Meta API setup, deploy, smoke test"
+}

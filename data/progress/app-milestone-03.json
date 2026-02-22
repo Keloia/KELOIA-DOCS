@@ -1,0 +1,9 @@
+{
+  "id": "app-milestone-03",
+  "phase": 3,
+  "title": "Core Domain: Payment & Assets",
+  "status": "not-started",
+  "tasksTotal": 5,
+  "tasksCompleted": 0,
+  "notes": "Payment recording, financial summary, bus management, maintenance logging"
+}

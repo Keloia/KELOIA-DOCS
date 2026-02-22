@@ -1,0 +1,7 @@
+{
+  "id": "app-task-009",
+  "title": "Dashboard UI — React SPA",
+  "column": "Backlog",
+  "description": "Scaffold React + Vite + Tailwind + shadcn/ui on Cloudflare Pages, build Hono RPC client, login page, Schedule page, Assets page, Financials page, Settings page (owner), and alerts component.",
+  "assignee": null
+}

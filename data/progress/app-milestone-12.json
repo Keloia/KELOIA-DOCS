@@ -1,0 +1,9 @@
+{
+  "id": "app-milestone-12",
+  "phase": 12,
+  "title": "Multi-Tenant Onboarding",
+  "status": "not-started",
+  "tasksTotal": 3,
+  "tasksCompleted": 0,
+  "notes": "WhatsApp onboarding flow, tenant creation, invite codes"
+}

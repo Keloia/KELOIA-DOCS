@@ -1,0 +1,9 @@
+{
+  "id": "app-milestone-05",
+  "phase": 5,
+  "title": "WA BFF: Webhook Pipeline",
+  "status": "not-started",
+  "tasksTotal": 7,
+  "tasksCompleted": 0,
+  "notes": "Webhook verification, normalization, phone lookup, dedup, rate limiting"
+}

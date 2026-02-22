@@ -1,0 +1,9 @@
+{
+  "id": "app-milestone-07",
+  "phase": 7,
+  "title": "AI Processor",
+  "status": "not-started",
+  "tasksTotal": 6,
+  "tasksCompleted": 0,
+  "notes": "Queue consumer, Claude prompt, intent extraction, Zod parsing, error handling"
+}

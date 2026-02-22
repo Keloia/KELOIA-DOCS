@@ -118,16 +118,20 @@ async function renderKanban() {
     const indexData = await indexRes.json();
 
     // Fan-out: fetch all individual task files in parallel
-    const taskFiles = await Promise.all(
-      indexData.tasks.map(id =>
-        fetch(`data/kanban/${id}.json`).then(r => {
-          if (!r.ok) throw new Error(`Failed to fetch task ${id}: ${r.status}`);
-          return r.json();
-        })
-      )
-    );
-
+    // When authenticated, read via GitHub API so writes are immediately visible
     const isAuth = document.body.classList.contains('authenticated');
+    const taskFiles = await Promise.all(
+      indexData.tasks.map(async id => {
+        if (isAuth) {
+          const file = await getFile(`data/kanban/${id}.json`);
+          if (!file) throw new Error(`Task ${id} not found`);
+          return JSON.parse(file.content);
+        }
+        const r = await fetch(`data/kanban/${id}.json`);
+        if (!r.ok) throw new Error(`Failed to fetch task ${id}: ${r.status}`);
+        return r.json();
+      })
+    );
 
     // Derive CSS class from column name: lowercase, spaces -> hyphens
     function columnClass(name) {

@@ -880,6 +880,189 @@ body.authenticated .doc-actions.auth-only {
 }
 
 /* ============================================================
+   MCP Integration View
+   ============================================================ */
+.mcp-view {
+  max-width: 720px;
+}
+
+.mcp-view h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mcp-subtitle {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.mcp-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+
+.mcp-card h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--text-primary);
+}
+
+.mcp-card > p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.mcp-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--text-primary);
+}
+
+/* Tabs */
+.mcp-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.mcp-tab-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.mcp-tab-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+
+.mcp-tab-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* Tab content */
+.mcp-instruction {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.mcp-instruction code {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.85em;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.1em 0.35em;
+  color: var(--accent);
+}
+
+/* Code block with copy */
+.mcp-code-block {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  padding-right: 4.5rem;
+}
+
+.mcp-code-block pre {
+  margin: 0;
+  overflow-x: auto;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.mcp-code-block code {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.mcp-copy-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mcp-copy-btn:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* Divider */
+.mcp-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.25rem 0;
+}
+
+/* Tools table */
+.mcp-tools-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.mcp-tools-table th,
+.mcp-tools-table td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.mcp-tools-table th {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mcp-tools-table td code {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.85em;
+  color: var(--accent);
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* ============================================================
    Responsive — Mobile
    ============================================================ */
 @media (max-width: 768px) {
@@ -931,5 +1114,19 @@ body.authenticated .doc-actions.auth-only {
     min-width: 0;
     width: 100%;
     flex: none;
+  }
+
+  .mcp-tabs {
+    flex-wrap: wrap;
+  }
+
+  .mcp-code-block {
+    padding-right: 1rem;
+  }
+
+  .mcp-copy-btn {
+    position: static;
+    display: block;
+    margin-top: 0.75rem;
   }
 }

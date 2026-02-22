@@ -767,6 +767,120 @@ function showDeleteModal(slug, title) {
 }
 
 /* ============================================================
+   MCP Integration View
+   ============================================================ */
+function renderMcp() {
+  const MCP_URL = 'https://keloia-mcp.mfauzan-az23.workers.dev/mcp';
+
+  const tabs = [
+    {
+      id: 'vscode',
+      label: 'VS Code',
+      instruction: 'Add this to your VS Code MCP settings (<code>settings.json</code>):',
+      code: JSON.stringify({ "mcp": { "servers": { "keloia-docs": { "type": "http", "url": MCP_URL } } } }, null, 2),
+    },
+    {
+      id: 'claude-code',
+      label: 'Claude Code',
+      instruction: 'Run this command in your terminal:',
+      code: `claude mcp add keloia-docs --transport http --url "${MCP_URL}"`,
+    },
+    {
+      id: 'claude-desktop',
+      label: 'Claude Desktop',
+      instruction: 'Add this to your Claude Desktop config (<code>claude_desktop_config.json</code>):',
+      code: JSON.stringify({ "mcpServers": { "keloia-docs": { "url": MCP_URL } } }, null, 2),
+    },
+  ];
+
+  const tabButtonsHtml = tabs.map(t =>
+    `<button class="mcp-tab-btn" data-tab="${t.id}">${escapeHtml(t.label)}</button>`
+  ).join('');
+
+  const tabPanesHtml = tabs.map((t, i) => `
+    <div class="mcp-tab-pane" data-tab-pane="${t.id}" hidden>
+      <p class="mcp-instruction">${t.instruction}</p>
+      <div class="mcp-code-block">
+        <pre><code>${escapeHtml(t.code)}</code></pre>
+        <button class="mcp-copy-btn" data-copy-idx="${i}">Copy</button>
+      </div>
+    </div>
+  `).join('');
+
+  const toolsList = [
+    { name: 'keloia_list_docs', desc: 'List all documentation files' },
+    { name: 'keloia_read_doc', desc: 'Read a document by slug' },
+    { name: 'keloia_search_docs', desc: 'Search docs by keyword or regex' },
+    { name: 'keloia_get_kanban', desc: 'View the kanban board' },
+    { name: 'keloia_get_progress', desc: 'View milestone progress' },
+    { name: 'keloia_add_task', desc: 'Create a kanban task' },
+    { name: 'keloia_move_task', desc: 'Move a task between columns' },
+    { name: 'keloia_update_progress', desc: 'Update a milestone' },
+    { name: 'keloia_add_doc', desc: 'Create a new document' },
+    { name: 'keloia_edit_doc', desc: 'Edit an existing document' },
+    { name: 'keloia_delete_doc', desc: 'Delete a document' },
+  ];
+
+  const toolsTableHtml = toolsList.map(t =>
+    `<tr><td><code>${escapeHtml(t.name)}</code></td><td>${escapeHtml(t.desc)}</td></tr>`
+  ).join('');
+
+  mainEl.innerHTML = `
+    <div class="mcp-view">
+      <h1>🧩 MCP Integration</h1>
+      <p class="mcp-subtitle">Connect your AI coding assistant to access Keloia documentation via the Model Context Protocol.</p>
+
+      <div class="mcp-card">
+        <h2>🔗 Connect AI Tools via MCP</h2>
+        <p>Access this documentation directly from your AI coding assistant using the Model Context Protocol.</p>
+
+        <div class="mcp-tabs">
+          ${tabButtonsHtml}
+        </div>
+        ${tabPanesHtml}
+
+        <hr class="mcp-divider" />
+
+        <h3>Available Tools</h3>
+        <p>Your AI assistant will have access to these tools once connected:</p>
+        <table class="mcp-tools-table">
+          <thead><tr><th>Tool</th><th>Description</th></tr></thead>
+          <tbody>${toolsTableHtml}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  // Wire tabs
+  const defaultTab = 'claude-code';
+  const tabBtns = mainEl.querySelectorAll('.mcp-tab-btn');
+  const tabPanes = mainEl.querySelectorAll('.mcp-tab-pane');
+
+  function activateTab(tabId) {
+    tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabId));
+    tabPanes.forEach(pane => { pane.hidden = pane.dataset.tabPane !== tabId; });
+  }
+
+  tabBtns.forEach(btn => btn.addEventListener('click', () => activateTab(btn.dataset.tab)));
+  activateTab(defaultTab);
+
+  // Wire copy buttons — use index to get raw code (avoids HTML entity issues)
+  mainEl.querySelectorAll('.mcp-copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const code = tabs[parseInt(btn.dataset.copyIdx, 10)].code;
+      try {
+        await navigator.clipboard.writeText(code);
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+      } catch {
+        btn.textContent = 'Failed';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+      }
+    });
+  });
+}
+
+/* ============================================================
    Router
    ============================================================ */
 async function router() {
@@ -809,6 +923,10 @@ async function router() {
     case 'progress':
       renderProgress();
       updateActiveNav('progress', null);
+      break;
+    case 'mcp':
+      renderMcp();
+      updateActiveNav('mcp', null);
       break;
     default:
       // Redirect unknown routes to docs

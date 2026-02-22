@@ -1,0 +1,18 @@
+name = "keloia-mcp"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+GITHUB_OWNER = "enjat"
+GITHUB_REPO = "keloia-docs"
+GITHUB_BRANCH = "main"
+# GITHUB_TOKEN — set via: wrangler secret put GITHUB_TOKEN
+
+[[durable_objects.bindings]]
+name = "KeloiaMCP"
+class_name = "KeloiaMCP"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["KeloiaMCP"]

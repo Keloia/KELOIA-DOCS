@@ -23,14 +23,14 @@ export class KeloiaMCP extends McpAgent<WorkerEnv, {}, {}> {
   }
 }
 
-// Wrap the default handler to intercept OAuth discovery requests.
-// MCP clients probe /.well-known/oauth-authorization-server before connecting.
-// This server doesn't use OAuth, so return 404 to let clients skip auth.
-const mcpHandler = KeloiaMCP.mount("/mcp", { binding: "KeloiaMCP" });
+// Use Streamable HTTP transport (serve) instead of SSE (mount).
+// This is the modern MCP transport that Claude Code expects.
+const mcpHandler = KeloiaMCP.serve("/mcp", { binding: "KeloiaMCP" });
 
 export default {
   async fetch(request: Request, env: WorkerEnv, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+    // Return 404 for OAuth discovery — this server doesn't require auth.
     if (url.pathname.startsWith("/.well-known/")) {
       return new Response(null, { status: 404 });
     }

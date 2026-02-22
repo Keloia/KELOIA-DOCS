@@ -1,0 +1,9 @@
+{
+  "id": "milestone-09",
+  "phase": 9,
+  "title": "GitHub API Wrapper",
+  "status": "done",
+  "tasksTotal": 1,
+  "tasksCompleted": 1,
+  "notes": "GitHub Contents API wrapper with SHA-aware updates, serialized write queue, and unicode-safe Base64."
+}

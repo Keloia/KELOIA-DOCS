@@ -2,8 +2,8 @@
   "id": "milestone-03",
   "phase": 3,
   "title": "MCP Foundation",
-  "status": "pending",
-  "tasksTotal": 0,
-  "tasksCompleted": 0,
-  "notes": null
+  "status": "done",
+  "tasksTotal": 2,
+  "tasksCompleted": 2,
+  "notes": "TypeScript MCP server with Node16 ESM, stdio transport, and createServer() entry point with keloia_ prefix."
 }

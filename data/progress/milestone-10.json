@@ -1,0 +1,9 @@
+{
+  "id": "milestone-10",
+  "phase": 10,
+  "title": "Site Doc CRUD",
+  "status": "done",
+  "tasksTotal": 2,
+  "tasksCompleted": 2,
+  "notes": "Create, edit with preview toggle, and delete docs via GitHub API with SHA-aware writes and search index invalidation."
+}

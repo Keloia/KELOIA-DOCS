@@ -1,0 +1,9 @@
+{
+  "id": "milestone-08",
+  "phase": 8,
+  "title": "GitHub Auth",
+  "status": "done",
+  "tasksTotal": 1,
+  "tasksCompleted": 1,
+  "notes": "GitHub PAT authentication with localStorage persistence and CSS-class-gated write controls."
+}

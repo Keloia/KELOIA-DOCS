@@ -1,7 +1,7 @@
 {
   "id": "task-005",
   "title": "Test write tools",
-  "column": "In Progress",
-  "description": null,
+  "column": "Done",
+  "description": "Verified MCP write tools (add_task, move_task, update_progress) work correctly with Zod validation and atomic writes.",
   "assignee": null
 }

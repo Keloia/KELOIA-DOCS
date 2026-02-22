@@ -1,0 +1,9 @@
+{
+  "id": "milestone-07",
+  "phase": 7,
+  "title": "MCP Search + CRUD",
+  "status": "done",
+  "tasksTotal": 1,
+  "tasksCompleted": 1,
+  "notes": "MCP search and doc CRUD tools (keloia_search_docs, keloia_add_doc, keloia_edit_doc, keloia_delete_doc)."
+}

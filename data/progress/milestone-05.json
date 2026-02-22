@@ -1,9 +1,9 @@
 {
   "id": "milestone-05",
   "phase": 5,
-  "title": "MCP Write Tools + Integration",
-  "status": "in-progress",
+  "title": "MCP Write Tools",
+  "status": "done",
   "tasksTotal": 3,
-  "tasksCompleted": 1,
-  "notes": null
+  "tasksCompleted": 3,
+  "notes": "Three write tools (add_task, move_task, update_progress) with Zod validation and atomic writes."
 }

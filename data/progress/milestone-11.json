@@ -1,0 +1,9 @@
+{
+  "id": "milestone-11",
+  "phase": 11,
+  "title": "Interactive Kanban",
+  "status": "done",
+  "tasksTotal": 1,
+  "tasksCompleted": 1,
+  "notes": "Drag-and-drop kanban with confirmation modal and GitHub API persistence using HTML5 DnD API."
+}

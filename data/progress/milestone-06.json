@@ -1,0 +1,9 @@
+{
+  "id": "milestone-06",
+  "phase": 6,
+  "title": "Site Search + Guide",
+  "status": "done",
+  "tasksTotal": 2,
+  "tasksCompleted": 2,
+  "notes": "Full-text doc search with MiniSearch (lazy index, debounced, snippets) and static MCP setup guide page."
+}

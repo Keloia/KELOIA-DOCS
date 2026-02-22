@@ -2,8 +2,8 @@
   "id": "milestone-04",
   "phase": 4,
   "title": "MCP Read Tools",
-  "status": "pending",
-  "tasksTotal": 0,
-  "tasksCompleted": 0,
-  "notes": null
+  "status": "done",
+  "tasksTotal": 2,
+  "tasksCompleted": 2,
+  "notes": "Four read tools (list_docs, read_doc, get_kanban, get_progress) with pagination and error handling."
 }

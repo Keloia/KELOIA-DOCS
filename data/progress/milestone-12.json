@@ -1,0 +1,9 @@
+{
+  "id": "milestone-12",
+  "phase": 12,
+  "title": "Cross-Phase Fixes",
+  "status": "done",
+  "tasksTotal": 1,
+  "tasksCompleted": 1,
+  "notes": "Search index invalidation after CRUD, edit route auth guard, script order fix, and integration testing."
+}

@@ -355,7 +355,8 @@ async function renderProgress() {
         ? `<p class="milestone-notes">${escapeHtml(m.notes)}</p>`
         : '';
 
-      return `<div class="milestone-card">
+      const doneClass = (m.status === 'done' || m.status === 'complete') ? ' milestone-done' : '';
+      return `<div class="milestone-card${doneClass}">
         <div class="milestone-title">
           <span class="milestone-name">${escapeHtml(m.title || '')}</span>
           <span class="badge badge-phase">Phase ${m.phase}</span>
@@ -371,8 +372,23 @@ async function renderProgress() {
 
     mainEl.innerHTML = `<div class="progress-tracker">
       <h1>Project Progress</h1>
+      <label class="progress-filter">
+        <input type="checkbox" id="hide-done-toggle" />
+        <span>Hide completed</span>
+      </label>
       ${milestonesHtml}
     </div>`;
+
+    // Wire up hide-done filter
+    const hideDoneToggle = document.getElementById('hide-done-toggle');
+    const savedHideDone = localStorage.getItem('keloia_hide_done') === '1';
+    hideDoneToggle.checked = savedHideDone;
+    if (savedHideDone) mainEl.querySelector('.progress-tracker').classList.add('hide-done');
+
+    hideDoneToggle.addEventListener('change', () => {
+      mainEl.querySelector('.progress-tracker').classList.toggle('hide-done', hideDoneToggle.checked);
+      localStorage.setItem('keloia_hide_done', hideDoneToggle.checked ? '1' : '0');
+    });
   } catch (err) {
     console.error('Failed to render progress:', err);
     mainEl.innerHTML = '<p class="error-message">Error loading progress tracker.</p>';

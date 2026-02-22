@@ -738,6 +738,26 @@ body {
   padding-bottom: 0.5rem;
 }
 
+.progress-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.progress-filter input[type="checkbox"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.progress-tracker.hide-done .milestone-done {
+  display: none;
+}
+
 .milestone-card {
   background: var(--bg-secondary);
   border-radius: 8px;

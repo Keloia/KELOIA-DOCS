@@ -110,7 +110,10 @@ Plans:
   2. An authenticated user can open an existing doc in a markdown textarea and save changes — the updated content renders on next view
   3. While editing, the user can toggle a rendered preview of the markdown without leaving the edit view
   4. An authenticated user can delete a doc via a confirmation modal that names the doc title — the doc is removed from the sidebar after deletion
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 10-01-PLAN.md — Edit view with preview toggle + sidebar edit/delete buttons (CRUD-02, CRUD-03)
+- [ ] 10-02-PLAN.md — Create form + delete confirmation modal + New Doc sidebar button (CRUD-01, CRUD-04)
 
 ### Phase 11: Interactive Kanban
 **Goal**: Authenticated users can drag kanban cards between columns, confirm the move, and have the column change persisted to the repository
@@ -136,5 +139,5 @@ Plans:
 | 7. MCP Search + Doc CRUD Tools | 1/1 | Complete   | 2026-02-22 | - |
 | 8. GitHub Auth | 1/1 | Complete   | 2026-02-22 | - |
 | 9. GitHub API Wrapper | 1/1 | Complete   | 2026-02-22 | - |
-| 10. Site Doc CRUD | v2.0 | 0/TBD | Not started | - |
+| 10. Site Doc CRUD | v2.0 | 0/2 | Not started | - |
 | 11. Interactive Kanban | v2.0 | 0/TBD | Not started | - |

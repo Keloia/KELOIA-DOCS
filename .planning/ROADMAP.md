@@ -142,4 +142,4 @@ Plans:
 | 8. GitHub Auth | 1/1 | Complete   | 2026-02-22 | - |
 | 9. GitHub API Wrapper | 1/1 | Complete   | 2026-02-22 | - |
 | 10. Site Doc CRUD | 2/2 | Complete    | 2026-02-22 | - |
-| 11. Interactive Kanban | 1/1 | Complete   | 2026-02-22 | - |
+| 11. Interactive Kanban | 1/1 | Complete    | 2026-02-22 | - |

@@ -459,9 +459,192 @@ async function renderEditView(slug) {
   });
 }
 
+/* ============================================================
+   Doc Create View
+   ============================================================ */
+async function renderCreateView() {
+  mainEl.innerHTML = `
+    <div class="create-view">
+      <h1>New Doc</h1>
+      <div class="form-field">
+        <label for="new-slug">Slug</label>
+        <input type="text" id="new-slug" class="form-input" placeholder="my-doc-name" autocomplete="off" />
+        <p class="field-hint">Lowercase letters, numbers, hyphens only</p>
+      </div>
+      <div class="form-field">
+        <label for="new-title">Title</label>
+        <input type="text" id="new-title" class="form-input" placeholder="My Doc Name" autocomplete="off" />
+      </div>
+      <div class="form-field">
+        <label for="new-body">Content</label>
+        <button id="new-preview-btn" class="btn-action btn-secondary" style="margin-bottom:0.5rem">Preview</button>
+        <textarea id="new-body" class="edit-textarea" style="height:300px"></textarea>
+        <div id="new-preview" class="edit-preview" hidden></div>
+      </div>
+      <p id="create-error" class="form-error" hidden></p>
+      <div class="form-actions">
+        <button id="create-btn" class="btn-action">Create Doc</button>
+        <button id="create-cancel-btn" class="btn-action btn-secondary">Cancel</button>
+      </div>
+    </div>
+  `;
+
+  let previewing = false;
+  const textarea = document.getElementById('new-body');
+  const preview = document.getElementById('new-preview');
+  const previewBtn = document.getElementById('new-preview-btn');
+  const errorEl = document.getElementById('create-error');
+
+  previewBtn.addEventListener('click', () => {
+    previewing = !previewing;
+    if (previewing) {
+      const rawHtml = marked.parse(textarea.value);
+      preview.innerHTML = DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
+      textarea.hidden = true;
+      preview.hidden = false;
+      previewBtn.textContent = 'Edit';
+    } else {
+      textarea.hidden = false;
+      preview.hidden = true;
+      previewBtn.textContent = 'Preview';
+    }
+  });
+
+  document.getElementById('create-cancel-btn').addEventListener('click', () => {
+    window.location.hash = '#/docs';
+  });
+
+  document.getElementById('create-btn').addEventListener('click', async () => {
+    const slug = document.getElementById('new-slug').value.trim();
+    const title = document.getElementById('new-title').value.trim();
+    const body = textarea.value.trim();
+
+    const showError = (msg) => {
+      errorEl.textContent = msg;
+      errorEl.hidden = false;
+    };
+
+    errorEl.hidden = true;
+
+    // Validate slug
+    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) {
+      showError('Slug must be lowercase letters, numbers, and hyphens only.');
+      return;
+    }
+
+    // Validate title
+    if (!title) {
+      showError('Title is required.');
+      return;
+    }
+
+    // Validate body
+    if (!body) {
+      showError('Content is required.');
+      return;
+    }
+
+    // Check for duplicate slug
+    let indexData;
+    try {
+      const indexFile = await getFile('data/docs/index.json');
+      indexData = JSON.parse(indexFile.content);
+    } catch (err) {
+      showError('Failed to load index. Check your connection and try again.');
+      return;
+    }
+
+    if (indexData.docs.some(d => d.slug === slug)) {
+      showError('A doc with this slug already exists.');
+      return;
+    }
+
+    const createBtn = document.getElementById('create-btn');
+    createBtn.disabled = true;
+    createBtn.textContent = 'Creating...';
+
+    try {
+      // Write the markdown file first
+      await writeFile('data/docs/' + slug + '.md', body, 'docs: create ' + slug);
+
+      // Update the index
+      indexData.docs.push({ slug, title });
+      await writeFile('data/docs/index.json', JSON.stringify(indexData, null, 2), 'docs: add ' + slug);
+
+      // Refresh sidebar
+      await populateDocList();
+
+      // Navigate to new doc
+      window.location.hash = '#/docs/' + slug;
+    } catch (err) {
+      createBtn.disabled = false;
+      createBtn.textContent = 'Create Doc';
+      showError('Create failed: ' + (err.message || 'Check your connection and try again.'));
+    }
+  });
+}
+
 function showDeleteModal(slug, title) {
-  // Stub — Plan 02 implements the real delete modal
-  alert('Delete ' + title + '? (coming in next plan)');
+  // Remove any existing modal
+  document.getElementById('delete-modal')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'delete-modal';
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h2>Delete doc?</h2>
+      <p>This will permanently delete <strong>${escapeHtml(title)}</strong> from the repository.</p>
+      <p id="modal-error" class="form-error" hidden></p>
+      <div class="modal-actions">
+        <button id="confirm-delete-btn" class="btn-action btn-danger">Delete</button>
+        <button id="cancel-delete-btn" class="btn-action btn-secondary">Cancel</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  document.getElementById('cancel-delete-btn').addEventListener('click', () => {
+    overlay.remove();
+  });
+
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.remove();
+  });
+
+  document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    const modalError = document.getElementById('modal-error');
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Deleting...';
+    modalError.hidden = true;
+
+    try {
+      // Update index first
+      const indexFile = await getFile('data/docs/index.json');
+      const indexData = JSON.parse(indexFile.content);
+      const updated = { ...indexData, docs: indexData.docs.filter(d => d.slug !== slug) };
+      await writeFile('data/docs/index.json', JSON.stringify(updated, null, 2), 'docs: remove ' + slug);
+
+      // Then delete the file
+      await deleteFile('data/docs/' + slug + '.md', 'docs: delete ' + slug);
+
+      // Remove overlay
+      overlay.remove();
+
+      // Refresh sidebar
+      await populateDocList();
+
+      // Navigate to docs
+      window.location.hash = '#/docs';
+    } catch (err) {
+      modalError.textContent = 'Delete failed: ' + (err.message || 'Check your connection and try again.');
+      modalError.hidden = false;
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Delete';
+    }
+  });
 }
 
 /* ============================================================
@@ -485,8 +668,7 @@ async function router() {
   switch (view) {
     case 'docs':
       if (param === 'new') {
-        // Plan 02 will implement renderCreateView — stub for now
-        mainEl.innerHTML = '<p>Create view coming soon.</p>';
+        await renderCreateView();
         updateActiveNav('docs', null);
       } else if (subview === 'edit' && param) {
         await renderEditView(param);
@@ -520,6 +702,11 @@ window.addEventListener('DOMContentLoaded', async () => {
   await populateDocList();
   initAuth(); // non-blocking — verifies stored token in background
   await router();
+
+  // New Doc button
+  document.getElementById('new-doc-btn').addEventListener('click', () => {
+    window.location.hash = '#/docs/new';
+  });
 
   // Search event listeners
   const searchInput = document.getElementById('search-input');

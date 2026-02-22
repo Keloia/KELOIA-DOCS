@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** When a markdown or JSON file changes, both humans (via the site) and AI tools (via MCP) see the update immediately — no build pipeline, no deploy step, no sync.
-**Current focus:** v2.0 Search + Auth + CRUD — Phase 8 plan 01 complete, Phase 9 next
+**Current focus:** v2.0 Search + Auth + CRUD — Phase 9 plan 01 complete, Phase 10 next
 
 ## Current Position
 
-Phase: 8 of 11 (GitHub Auth)
+Phase: 9 of 11 (GitHub API Wrapper)
 Plan: 1 of 1 complete
 Status: Phase complete
-Last activity: 2026-02-22 — 08-01 complete (GitHub PAT auth: verifyToken, setAuthState, initAuth, login/logout handlers, CSS gating)
+Last activity: 2026-02-22 — 09-01 complete (GitHub Contents API wrapper: getFile, writeFile, deleteFile, serialized write queue, Unicode-safe Base64)
 
-Progress: [████░░░░░░] ~25% (v2.0)
+Progress: [█████░░░░░] ~38% (v2.0)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12 (3 in v1.0, 7 in v1.1, 2 in v2.0)
+- Total plans completed: 13 (3 in v1.0, 7 in v1.1, 3 in v2.0)
 - Average duration: ~4 min
 - Total execution time: ~46 min
 
@@ -35,6 +35,7 @@ Progress: [████░░░░░░] ~25% (v2.0)
 | 06-site-search-guide | 2 | ~9 min | ~4.5 min |
 | 07-mcp-search-crud | 1 | ~4 min | ~4 min |
 | 08-github-auth | 1 | ~3 min | ~3 min |
+| 09-github-api-wrapper | 1 | ~1 min | ~1 min |
 
 ## Accumulated Context
 
@@ -47,6 +48,12 @@ Recent decisions affecting v2.0:
 - Search library: MiniSearch preferred over FlexSearch — cleaner snippet API for this corpus size
 - Mobile kanban DnD: explicitly out of scope for v2.0 — HTML5 DnD does not fire on iOS/Android
 - MCP doc tools: separate add_doc and edit_doc (not upsert) — descriptions must explicitly exclude each other's use case
+
+Phase 9 decisions:
+- Plain function declarations used in github.js for global exposure — no window.x assignment needed
+- github.js loaded with defer after app.js — getAuthToken() (app.js) defined before github.js functions invoked
+- writeQueue tail uses result.catch(() => {}) — failed write doesn't block queue; caller still gets real rejected promise
+- No X-GitHub-Api-Version header in github.js — consistent with Phase 8 decision to avoid CORS preflight
 
 Phase 8 decisions:
 - verifyToken omits X-GitHub-Api-Version header — avoids CORS preflight on browser fetch
@@ -74,5 +81,5 @@ Phase 6 decisions:
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 08-01-PLAN.md (GitHub PAT auth: verifyToken, setAuthState, getAuthToken, initAuth, login/logout handlers, body.authenticated CSS gating)
-Resume with: `/gsd:execute-phase 9` (Phase 9 — GitHub API wrapper)
+Stopped at: Completed 09-01-PLAN.md (GitHub Contents API wrapper: github.js with getFile, writeFile, deleteFile, serialized write queue, Unicode-safe Base64)
+Resume with: `/gsd:execute-phase 10` (Phase 10 — Doc CRUD)

@@ -29,7 +29,7 @@ Requirements for v2.0 release. Each maps to roadmap phases.
 - [ ] **CRUD-02**: Authenticated user can edit an existing doc in a markdown textarea
 - [ ] **CRUD-03**: User can toggle a preview of the rendered markdown while editing
 - [ ] **CRUD-04**: Authenticated user can delete a doc with a confirmation modal
-- [ ] **CRUD-05**: All site doc writes go through the GitHub Contents API (commit to repo)
+- [x] **CRUD-05**: All site doc writes go through the GitHub Contents API (commit to repo)
 - [x] **CRUD-06**: MCP tool `keloia_add_doc` creates a new doc file in data/docs/
 - [x] **CRUD-07**: MCP tool `keloia_edit_doc` updates an existing doc file
 - [x] **CRUD-08**: MCP tool `keloia_delete_doc` removes a doc file
@@ -104,7 +104,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-02 | Phase 8 | Complete |
 | AUTH-03 | Phase 8 | Complete |
 | AUTH-04 | Phase 8 | Complete |
-| CRUD-05 | Phase 9 | Pending |
+| CRUD-05 | Phase 9 | Complete |
 | CRUD-01 | Phase 10 | Pending |
 | CRUD-02 | Phase 10 | Pending |
 | CRUD-03 | Phase 10 | Pending |

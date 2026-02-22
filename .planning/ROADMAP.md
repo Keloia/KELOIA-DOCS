@@ -40,7 +40,7 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details.
 - [x] **Phase 6: Site Search + Guide** — Full-text doc search in the sidebar and static MCP setup guide page (completed 2026-02-21)
 - [x] **Phase 7: MCP Search + Doc CRUD Tools** — `keloia_search_docs`, `keloia_add_doc`, `keloia_edit_doc`, `keloia_delete_doc` MCP tools (completed 2026-02-22)
 - [x] **Phase 8: GitHub Auth** — PAT entry modal, localStorage persistence, and auth-gated write UI (completed 2026-02-22)
-- [ ] **Phase 9: GitHub API Wrapper** — SHA-aware Contents API wrapper with serialized write queue
+- [x] **Phase 9: GitHub API Wrapper** — SHA-aware Contents API wrapper with serialized write queue (completed 2026-02-22)
 - [ ] **Phase 10: Site Doc CRUD** — Authenticated add, edit (with preview), and delete for docs via the GitHub API
 - [ ] **Phase 11: Interactive Kanban** — Authenticated drag-and-drop kanban with confirmation modal and GitHub API persistence
 
@@ -97,7 +97,7 @@ Plans:
   2. Saving a doc containing non-ASCII characters (em dash, smart quotes, curly quotes) completes without an `InvalidCharacterError`
   3. Decoding a file fetched from the GitHub API succeeds in all browsers without whitespace errors
   4. Every update and delete operation fetches the current file SHA immediately before the write — no cached SHAs are reused
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
 - [ ] 09-01-PLAN.md — GitHub Contents API wrapper module (github.js) with serialized write queue
 
@@ -135,6 +135,6 @@ Plans:
 | 6. Site Search + Guide | 2/2 | Complete    | 2026-02-21 | - |
 | 7. MCP Search + Doc CRUD Tools | 1/1 | Complete   | 2026-02-22 | - |
 | 8. GitHub Auth | 1/1 | Complete   | 2026-02-22 | - |
-| 9. GitHub API Wrapper | v2.0 | 0/1 | Not started | - |
+| 9. GitHub API Wrapper | 1/1 | Complete   | 2026-02-22 | - |
 | 10. Site Doc CRUD | v2.0 | 0/TBD | Not started | - |
 | 11. Interactive Kanban | v2.0 | 0/TBD | Not started | - |

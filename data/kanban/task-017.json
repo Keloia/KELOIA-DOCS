@@ -1,0 +1,7 @@
+{
+  "id": "task-017",
+  "title": "Set FONNTE_TOKEN secret for production OTP delivery",
+  "column": "Backlog",
+  "description": "BLOCKER: Dashboard login works but OTPs only log to console (OTP_DEV_MODE). Need to register at fonnte.com, connect WhatsApp number, copy device token, then run: `pnpm wrangler secret put FONNTE_TOKEN --env production -c packages/dashboard-bff/wrangler.toml` and `pnpm wrangler secret delete OTP_DEV_MODE --env production -c packages/dashboard-bff/wrangler.toml`. No code changes needed — provider abstraction is already in place.",
+  "assignee": null
+}

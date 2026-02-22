@@ -84,7 +84,9 @@ Plans:
   2. The token persists in localStorage across browser sessions — closing and reopening the tab does not require re-entry
   3. Clicking logout clears the token and returns the UI to unauthenticated state
   4. Edit, add, delete, and drag-and-drop controls are hidden when not authenticated and appear when authenticated
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 08-01-PLAN.md — Auth HTML/CSS + JS logic (sidebar login form, token verification, localStorage persistence, CSS auth gating)
 
 ### Phase 9: GitHub API Wrapper
 **Goal**: All site write operations reach the GitHub Contents API safely — with SHA-aware updates, Unicode-safe Base64, and serialized writes that prevent 409 Conflicts
@@ -130,7 +132,7 @@ Plans:
 | 5. Write Tools + Integration | v1.1 | 3/3 | Complete | 2026-02-22 |
 | 6. Site Search + Guide | 2/2 | Complete    | 2026-02-21 | - |
 | 7. MCP Search + Doc CRUD Tools | 1/1 | Complete   | 2026-02-22 | - |
-| 8. GitHub Auth | v2.0 | 0/TBD | Not started | - |
+| 8. GitHub Auth | v2.0 | 0/1 | Not started | - |
 | 9. GitHub API Wrapper | v2.0 | 0/TBD | Not started | - |
 | 10. Site Doc CRUD | v2.0 | 0/TBD | Not started | - |
 | 11. Interactive Kanban | v2.0 | 0/TBD | Not started | - |

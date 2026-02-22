@@ -71,7 +71,9 @@ Plans:
   3. `keloia_add_doc` creates a new markdown file in data/docs/ and updates the doc index — fails if slug already exists
   4. `keloia_edit_doc` overwrites an existing doc file — fails if slug does not exist
   5. `keloia_delete_doc` removes the doc file and removes the slug from the index — index is updated before file deletion
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 07-01-PLAN.md — Search tool + doc CRUD tools (docs.ts with all 5 tools, server registration, build)
 
 ### Phase 8: GitHub Auth
 **Goal**: Users can authenticate with a GitHub Personal Access Token so that write UI controls become available
@@ -127,7 +129,7 @@ Plans:
 | 4. Read Tools | v1.1 | 2/2 | Complete | 2026-02-22 |
 | 5. Write Tools + Integration | v1.1 | 3/3 | Complete | 2026-02-22 |
 | 6. Site Search + Guide | 2/2 | Complete    | 2026-02-21 | - |
-| 7. MCP Search + Doc CRUD Tools | v2.0 | 0/TBD | Not started | - |
+| 7. MCP Search + Doc CRUD Tools | v2.0 | 0/1 | Not started | - |
 | 8. GitHub Auth | v2.0 | 0/TBD | Not started | - |
 | 9. GitHub API Wrapper | v2.0 | 0/TBD | Not started | - |
 | 10. Site Doc CRUD | v2.0 | 0/TBD | Not started | - |

@@ -66,3 +66,41 @@
 
 ---
 
+
+## v2.0 Search + Auth + CRUD (Shipped: 2026-02-22)
+
+**Phases completed:** 7 phases, 9 plans
+**Timeline:** 1 day (2026-02-22)
+**Files:** 55 files changed, +11,579 / -942 lines
+**LOC (site):** 1,992 lines (HTML/CSS/JS)
+**LOC (server):** 731 lines TypeScript (mcp-server/src/)
+**Git range:** v1.1..f1f757c
+
+**Delivered:** Transformed the site from read-only to read-write with GitHub PAT authentication, full-text search across both surfaces, interactive kanban drag-and-drop, doc CRUD via GitHub API, and MCP doc management tools.
+
+**Key accomplishments:**
+- Full-text doc search with MiniSearch (lazy index, debounced, snippets) + static MCP setup guide
+- MCP search + doc CRUD tools (keloia_search_docs, keloia_add_doc, keloia_edit_doc, keloia_delete_doc)
+- GitHub PAT authentication with localStorage persistence and CSS-class-gated write controls
+- Site doc CRUD — create, edit with preview toggle, delete via GitHub API with SHA-aware writes
+- Interactive kanban drag-and-drop with confirmation modal and GitHub API persistence
+- Cross-phase integration: search index invalidation after CRUD, edit route auth guard, script order fix
+
+**Key decisions:**
+- MiniSearch over FlexSearch — cleaner snippet API for this corpus size
+- PAT entry (not full OAuth) — no backend required, appropriate for 1-2 user tool
+- CSS class gating (body.authenticated) — stylesheet rules toggle .auth-only/.unauth-only display
+- Serialized write queue in github.js — prevents 409 Conflicts on rapid successive writes
+- Unicode-safe Base64 via TextEncoder/TextDecoder — avoids InvalidCharacterError on non-ASCII
+- Index-first delete order for MCP, file-first create order for site — each has consistent safe failure mode
+- HTML5 DnD API (not library) — sufficient for desktop; mobile drag explicitly deferred
+
+**Tech debt accepted:**
+- mcp-guide.md tool reference table missing 4 Phase 7 tools
+- #/docs/new route auth guard missing at router level (write blocked safely at API level)
+- Kanban drag-and-drop requires live browser testing (human_needed verification)
+
+**Archive:** `.planning/milestones/v2.0-ROADMAP.md`, `.planning/milestones/v2.0-REQUIREMENTS.md`, `.planning/milestones/v2.0-MILESTONE-AUDIT.md`
+
+---
+

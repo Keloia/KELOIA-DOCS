@@ -4,9 +4,9 @@
 
 A single repo that serves Keloia project documentation to humans via a GitHub Pages static site and to AI tools via an MCP server. Markdown and JSON files are the single source of truth — the site renders them for humans, the MCP server serves them to Claude Code. No duplication, no build step for the site, zero-friction editing.
 
-The static site is shipped and live: a vanilla JS SPA with hash routing, dark theme, markdown rendering via marked.js + DOMPurify, kanban board with color-coded columns, and progress tracker with computed bars. GitHub Actions deploys on push to main with no build step.
+The static site is a vanilla JS SPA with hash routing, dark theme, markdown rendering via marked.js + DOMPurify, kanban board with drag-and-drop, progress tracker, full-text search, and GitHub PAT-authenticated doc CRUD. GitHub Actions deploys on push to main with no build step.
 
-The MCP server is shipped: a TypeScript server with 7 tools (4 read, 3 write) that gives Claude Code full access to project docs, kanban board, and milestone progress. Zod validation, atomic writes, and natural language tool selection work out of the box.
+The MCP server is a TypeScript server with 11 tools (4 read, 3 write, 4 doc management) that gives Claude Code full access to project docs, kanban board, milestone progress, and doc search/CRUD. Zod validation, atomic writes, and natural language tool selection work out of the box.
 
 ## Core Value
 
@@ -36,43 +36,49 @@ When a markdown or JSON file changes, both humans (via the site) and AI tools (v
 - ✓ MCP server structured for future HTTP/SSE transport (transport.ts separation) — v1.1
 - ✓ .mcp.json config for Claude Code project-scope registration — v1.1
 - ✓ README with setup instructions (clone, install, build, register) — v1.1
-
-## Current Milestone: v2.0 Search + Auth + CRUD
-
-**Goal:** Transform the site from read-only to read-write with GitHub OAuth authentication, add full-text search across both surfaces, interactive kanban, and MCP setup documentation.
-
-**Target features:**
-- Full-text doc search on site (sidebar search box, results with snippets)
-- MCP search tool (keloia_search_docs with regex/filter support)
-- MCP setup guide page (Cursor, Claude Code, Windsurf)
-- GitHub OAuth login for write operations
-- Doc CRUD on site (add, edit via markdown textarea, delete) via GitHub API
-- Doc CRUD MCP tools (add_doc, edit_doc, delete_doc)
-- Interactive kanban with drag-and-drop and confirmation modal (requires login)
+- ✓ Full-text doc search in sidebar with MiniSearch (lazy index, debounced, snippets) — v2.0
+- ✓ MCP search tool (keloia_search_docs with keyword/regex + slug filter) — v2.0
+- ✓ MCP doc CRUD tools (keloia_add_doc, keloia_edit_doc, keloia_delete_doc) — v2.0
+- ✓ Static MCP setup guide page with Cursor, Claude Code, Windsurf configs — v2.0
+- ✓ GitHub PAT authentication with localStorage persistence — v2.0
+- ✓ CSS-class-gated write controls (body.authenticated toggles .auth-only) — v2.0
+- ✓ Site doc CRUD — create, edit with preview toggle, delete with confirmation modal — v2.0
+- ✓ All site writes via GitHub Contents API with SHA-aware updates — v2.0
+- ✓ Serialized write queue preventing 409 Conflicts — v2.0
+- ✓ Unicode-safe Base64 via TextEncoder/TextDecoder — v2.0
+- ✓ Interactive kanban drag-and-drop with confirmation modal — v2.0
+- ✓ Search index invalidation after every CRUD operation — v2.0
+- ✓ Edit route auth guard redirecting unauthenticated users — v2.0
 
 ### Active
+
+(None — planning next milestone)
 
 ### Out of Scope
 
 - Frameworks (React, Astro, Docusaurus, VitePress) — zero build step is a hard constraint
 - CSS frameworks (Tailwind, etc.) — adds build step
 - Database (SQLite, D1) — filesystem is the database for <100 tasks
-- ~~Authentication on the site~~ — moved to v2.0 (GitHub OAuth)
-- ~~Search across docs~~ — moved to v2.0 (full-text search)
+- Full GitHub OAuth flow — PAT is sufficient for 1-2 user tool
+- WYSIWYG / rich text editor — adds build step or massive complexity; markdown textarea sufficient
+- Real-time collaborative editing — no WebSocket/persistent server; GitHub Pages is static
+- Server-side search (Algolia, Pagefind) — requires build step or third-party account
+- Side-by-side live preview editor — preview toggle is sufficient
+- Mobile drag-and-drop — HTML5 DnD doesn't work on touch; defer to future
+- Delete kanban columns — destroys task history; column set is intentionally small and stable
 - GitHub Issues sync — adds external API dependency
 - Testing framework (Jest, Vitest) — tools under 20 lines each, test by using
-- Remote MCP transport in v1 — stdio first, remote when needed
+- Remote MCP transport in v2 — stdio first, remote when needed
 - WebSocket live updates — requires persistent server; GitHub Pages is static
-- ~~Edit-in-place on site~~ — moved to v2.0 (doc CRUD via GitHub API)
-- Column/assignee filters on get_kanban — deferred to v2 (READ-06)
-- Computed percentComplete on get_progress — deferred to v2 (READ-07)
-- Schema version assertion on reads — deferred to v2 (READ-08)
-- ~~keloia_search_docs keyword search~~ — moved to v2.0
+- Column/assignee filters on get_kanban — deferred
+- Computed percentComplete on get_progress — deferred
+- Schema version assertion on reads — deferred
 
 ## Context
 
 Shipped v1.0 with 846 lines of site code (HTML/CSS/JS) plus 14 data files.
 Shipped v1.1 with 386 lines of TypeScript MCP server code (6 source modules, 7 tools).
+Shipped v2.0 with 1,992 lines of site code and 731 lines of MCP server code (11 tools total).
 Tech stack: Vanilla HTML/CSS/JS for site, TypeScript + @modelcontextprotocol/sdk + Zod for MCP server, GitHub Actions for deploy.
 Data layer uses split-file JSON pattern: index.json as schema anchor + one file per entity.
 Both surfaces (site + MCP) read the same `data/` directory — no duplication, no sync.
@@ -82,7 +88,7 @@ Both surfaces (site + MCP) read the same `data/` directory — no duplication, n
 ## Constraints
 
 - **Zero build step for site**: No `npm install`, no bundler, no transpiler. Push to main = deployed.
-- **Minimal dependencies**: 3 production deps for MCP server (SDK, Zod, TypeScript). Zero for the site.
+- **Minimal dependencies**: 3 production deps for MCP server (SDK, Zod, TypeScript). Zero for the site (CDN only: marked.js, DOMPurify, MiniSearch).
 - **Single source of truth**: Markdown and JSON files. No duplication between site and MCP server.
 - **Tech stack**: Vanilla HTML/CSS/JS for site, TypeScript + MCP SDK for server, GitHub Pages for hosting.
 - **File structure**: `data/docs/` (markdown), `data/kanban/` (split-file JSON), `data/progress/` (split-file JSON), root (SPA), `mcp-server/` (TypeScript MCP server).
@@ -91,7 +97,7 @@ Both surfaces (site + MCP) read the same `data/` directory — no duplication, n
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Vanilla JS over any framework | Zero build step is a hard constraint; site is read-mostly for 1-2 users | ✓ Good — 846 LOC, instant deploy |
+| Vanilla JS over any framework | Zero build step is a hard constraint; site is read-mostly for 1-2 users | ✓ Good — 1,992 LOC, instant deploy |
 | marked.js from CDN | ~7KB gzipped, zero config, CommonMark-compliant, no npm install needed | ✓ Good — works reliably |
 | JSON over YAML/SQLite for task data | Native to JS, GitHub renders it, MCP tools read/write trivially | ✓ Good — split-file pattern works well |
 | Split-file pattern (index.json + per-entity files) | Prevents unbounded file growth, enables atomic updates | ✓ Good — clean separation |
@@ -106,6 +112,13 @@ Both surfaces (site + MCP) read the same `data/` directory — no duplication, n
 | import.meta.url path resolution | No env override needed; single developer, deterministic paths | ✓ Good — works reliably |
 | Write task file then update index | Ensures index only references files that exist on disk | ✓ Good — prevents dangling refs |
 | atomicWriteJson (writeFileSync + renameSync) | No partial reads possible under concurrent access | ✓ Good — crash-safe writes |
+| MiniSearch over FlexSearch | Cleaner snippet API, sufficient for <20 docs corpus | ✓ Good — lazy index, debounced search |
+| PAT entry over full GitHub OAuth | No backend required, appropriate for 1-2 user tool | ✓ Good — simple, works |
+| CSS class gating (body.authenticated) | Stylesheet rules toggle display; no JS show/hide per element | ✓ Good — clean pattern |
+| Serialized write queue in github.js | Promise chain prevents concurrent PUT/DELETE 409 conflicts | ✓ Good — no conflicts observed |
+| Unicode-safe Base64 via TextEncoder | Avoids InvalidCharacterError on non-ASCII content | ✓ Good — handles em dashes, smart quotes |
+| HTML5 DnD API (no library) | Sufficient for desktop; mobile drag explicitly deferred | ✓ Good — 0 dependencies added |
+| Index-first delete, file-first create | Each operation has consistent safe failure mode | ✓ Good — prevents dangling refs |
 
 ---
-*Last updated: 2026-02-22 after v2.0 milestone started*
+*Last updated: 2026-02-22 after v2.0 milestone*

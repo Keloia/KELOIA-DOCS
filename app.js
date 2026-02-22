@@ -127,6 +127,8 @@ async function renderKanban() {
       )
     );
 
+    const isAuth = document.body.classList.contains('authenticated');
+
     // Derive CSS class from column name: lowercase, spaces -> hyphens
     function columnClass(name) {
       return name.toLowerCase().replace(/\s+/g, '-');
@@ -145,24 +147,129 @@ async function renderKanban() {
         const assignee = task.assignee
           ? `<span class="card-assignee">${escapeHtml(task.assignee)}</span>`
           : '';
-        return `<div class="kanban-card">
+        const draggableAttr = isAuth ? 'draggable="true"' : '';
+        return `<div class="kanban-card" ${draggableAttr} data-task-id="${escapeHtml(task.id)}" data-task-title="${escapeHtml(task.title || '')}">
           <p class="card-title">${title}</p>
           ${desc}
           ${assignee}
         </div>`;
       }).join('');
 
-      return `<div class="kanban-column column-${cls}">
+      return `<div class="kanban-column column-${cls}" data-col-name="${escapeHtml(colName)}">
         <h3>${escapeHtml(colName)} <span class="col-count">${colTasks.length}</span></h3>
         ${cardsHtml || '<p class="empty-column">No tasks</p>'}
       </div>`;
     }).join('');
 
     mainEl.innerHTML = `<div class="kanban-board">${columnsHtml}</div>`;
+
+    if (isAuth) {
+      wireDragAndDrop();
+    }
   } catch (err) {
     console.error('Failed to render kanban:', err);
     mainEl.innerHTML = '<p class="error-message">Error loading kanban board.</p>';
   }
+}
+
+function wireDragAndDrop() {
+  let draggedTaskId = null;
+  let draggedTaskTitle = null;
+  let draggedSourceColumn = null;
+
+  mainEl.querySelectorAll('.kanban-card[draggable]').forEach(card => {
+    card.addEventListener('dragstart', (e) => {
+      draggedTaskId = card.dataset.taskId;
+      draggedTaskTitle = card.dataset.taskTitle;
+      draggedSourceColumn = card.closest('.kanban-column').dataset.colName;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', draggedTaskId);
+      card.classList.add('card-dragging');
+    });
+
+    card.addEventListener('dragend', () => {
+      card.classList.remove('card-dragging');
+      draggedTaskId = null;
+      draggedTaskTitle = null;
+      draggedSourceColumn = null;
+    });
+  });
+
+  mainEl.querySelectorAll('.kanban-column').forEach(col => {
+    col.addEventListener('dragover', (e) => {
+      // CRITICAL: Must call preventDefault() or drop event will never fire
+      if (e.dataTransfer.types.includes('text/plain')) {
+        e.preventDefault();
+        col.classList.add('col-drop-over');
+      }
+    });
+
+    col.addEventListener('dragleave', (e) => {
+      // Only remove highlight when truly leaving the column (not entering a child)
+      if (!col.contains(e.relatedTarget)) {
+        col.classList.remove('col-drop-over');
+      }
+    });
+
+    col.addEventListener('drop', (e) => {
+      e.preventDefault();
+      col.classList.remove('col-drop-over');
+      const targetColumn = col.dataset.colName;
+
+      if (!draggedTaskId || targetColumn === draggedSourceColumn) return;
+
+      showMoveModal(draggedTaskId, draggedTaskTitle, targetColumn);
+    });
+  });
+}
+
+function showMoveModal(taskId, taskTitle, targetColumn) {
+  document.getElementById('move-modal')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'move-modal';
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h2>Move task?</h2>
+      <p>Move <strong>${escapeHtml(taskTitle)}</strong> to <strong>${escapeHtml(targetColumn)}</strong>?</p>
+      <p id="move-modal-error" class="form-error" hidden></p>
+      <div class="modal-actions">
+        <button id="confirm-move-btn" class="btn-action">Move</button>
+        <button id="cancel-move-btn" class="btn-action btn-secondary">Cancel</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  document.getElementById('cancel-move-btn').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+
+  document.getElementById('confirm-move-btn').addEventListener('click', async () => {
+    const confirmBtn = document.getElementById('confirm-move-btn');
+    const errorEl = document.getElementById('move-modal-error');
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Moving...';
+    errorEl.hidden = true;
+
+    try {
+      const taskFile = await getFile(`data/kanban/${taskId}.json`);
+      const taskData = JSON.parse(taskFile.content);
+      taskData.column = targetColumn;
+      await writeFile(
+        `data/kanban/${taskId}.json`,
+        JSON.stringify(taskData, null, 2),
+        `kanban: move ${taskId} to ${targetColumn}`
+      );
+      overlay.remove();
+      await renderKanban();
+    } catch (err) {
+      errorEl.textContent = 'Move failed: ' + (err.message || 'Check your connection and try again.');
+      errorEl.hidden = false;
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Move';
+    }
+  });
 }
 
 /* ============================================================

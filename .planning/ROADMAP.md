@@ -8,7 +8,7 @@ A single repo serves project documentation to humans via GitHub Pages and to AI 
 
 - ✅ **v1.0 Data Layer + Static Site** — Phases 1-2 (shipped 2026-02-22)
 - ✅ **v1.1 MCP Server** — Phases 3-5 (shipped 2026-02-22)
-- 🚧 **v2.0 Search + Auth + CRUD** — Phases 6-11 (in progress)
+- 🚧 **v2.0 Search + Auth + CRUD** — Phases 6-12 (in progress)
 
 ## Phases
 
@@ -43,6 +43,7 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details.
 - [x] **Phase 9: GitHub API Wrapper** — SHA-aware Contents API wrapper with serialized write queue (completed 2026-02-22)
 - [x] **Phase 10: Site Doc CRUD** — Authenticated add, edit (with preview), and delete for docs via the GitHub API (completed 2026-02-22)
 - [x] **Phase 11: Interactive Kanban** — Authenticated drag-and-drop kanban with confirmation modal and GitHub API persistence (completed 2026-02-22)
+- [ ] **Phase 12: Cross-Phase Integration Fixes** — Search index invalidation after CRUD, edit route auth guard, script load order, mcp-guide MCP access
 
 ## Phase Details
 
@@ -128,6 +129,21 @@ Plans:
 Plans:
 - [ ] 11-01-PLAN.md — Draggable cards, DnD event wiring, move confirmation modal, drag CSS (KNBN-01, KNBN-02, KNBN-03)
 
+### Phase 12: Cross-Phase Integration Fixes
+**Goal**: Close all integration gaps identified by the v2.0 milestone audit — search index stays current after CRUD, edit route requires auth, script load order is safe, and mcp-guide is accessible to MCP tools
+**Depends on**: Phases 6-11 (fixes wiring between them)
+**Requirements**: None (no new requirements — fixes cross-phase integration)
+**Gap Closure**: INT-01, INT-02, INT-03, INT-04, FLOW-01, FLOW-02
+**Success Criteria** (what must be TRUE):
+  1. After creating a doc, searching for its title returns a result without page refresh
+  2. After editing a doc, searching for the new content returns a result without page refresh
+  3. After deleting a doc, searching for its title returns no result without page refresh
+  4. Navigating to `#/docs/any-slug/edit` while unauthenticated redirects to the doc view (not the edit form)
+  5. `github.js` loads before `app.js` in `index.html` — no `ReferenceError` risk on eager invocation
+  6. MCP tool `keloia_search_docs` can find content in `mcp-guide.md`
+Plans:
+- [ ] 12-01-PLAN.md — Search index invalidation, edit route auth guard, script order fix, mcp-guide in index.json
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -143,3 +159,4 @@ Plans:
 | 9. GitHub API Wrapper | 1/1 | Complete   | 2026-02-22 | - |
 | 10. Site Doc CRUD | 2/2 | Complete    | 2026-02-22 | - |
 | 11. Interactive Kanban | 1/1 | Complete    | 2026-02-22 | - |
+| 12. Cross-Phase Integration Fixes | 0/1 | Pending | - | - |

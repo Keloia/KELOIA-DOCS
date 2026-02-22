@@ -2,8 +2,8 @@
   "id": "app-milestone-08",
   "phase": 8,
   "title": "Dashboard BFF",
-  "status": "not-started",
+  "status": "done",
   "tasksTotal": 7,
-  "tasksCompleted": 0,
-  "notes": "WhatsApp OTP auth, sessions, RBAC, API routes, Service Binding proxy"
+  "tasksCompleted": 7,
+  "notes": "Dashboard BFF Worker complete: WhatsApp OTP auth (dev mode + WA_OUTBOUND), KV sessions (7d TTL), RBAC middleware, error handler, KV read-through cache, core-client proxy, all API routes (auth, schedule, assets, financials, alerts, settings), AppType export, ServiceResult moved to @keloia/shared. 28 tests passing across 5 test files."
 }

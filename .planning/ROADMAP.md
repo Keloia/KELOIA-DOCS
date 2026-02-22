@@ -141,6 +141,7 @@ Plans:
   4. Navigating to `#/docs/any-slug/edit` while unauthenticated redirects to the doc view (not the edit form)
   5. `github.js` loads before `app.js` in `index.html` — no `ReferenceError` risk on eager invocation
   6. MCP tool `keloia_search_docs` can find content in `mcp-guide.md`
+**Plans:** 1 plan
 Plans:
 - [ ] 12-01-PLAN.md — Search index invalidation, edit route auth guard, script order fix, mcp-guide in index.json
 

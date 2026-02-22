@@ -5,5 +5,5 @@
   "status": "done",
   "tasksTotal": 7,
   "tasksCompleted": 7,
-  "notes": "Booking CRUD, conflict detection, status transitions, schedule queries, 22 service tests. Completed 2026-02-22."
+  "notes": "Booking CRUD, conflict detection, status transitions, schedule queries, 22 service tests passing."
 }

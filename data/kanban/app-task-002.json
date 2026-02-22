@@ -1,7 +1,7 @@
 {
   "id": "app-task-002",
   "title": "Core domain — booking service",
-  "column": "Backlog",
+  "column": "Done",
   "description": "Scaffold core-domain Hono Worker, implement tenant-guard, activity-log, booking CRUD with conflict detection (date-range overlap query), status transitions (state machine), schedule queries, and internal routes.",
   "assignee": null
 }

@@ -2,8 +2,8 @@
   "id": "app-milestone-09",
   "phase": 9,
   "title": "Dashboard UI",
-  "status": "not-started",
+  "status": "done",
   "tasksTotal": 9,
-  "tasksCompleted": 0,
-  "notes": "React SPA, login, schedule, assets, financials, settings, alerts views"
+  "tasksCompleted": 9,
+  "notes": "React 19 + Vite 6 + Tailwind v4 + shadcn/ui SPA. OTP login, app shell (sidebar + mobile nav), alert banner. 4 pages: Schedule (booking table, create/detail, status transitions), Fleet (card grid, detail sheet, maintenance timeline), Financials (summary cards, receivables, record payment), Team (role management). Error states with retry, empty states, toasts, cross-mutation query invalidation. All 184 monorepo tests passing. PR #6."
 }

@@ -128,7 +128,17 @@ async function renderDoc(slug) {
     const markdown = await res.text();
     const rawHtml = marked.parse(markdown);
     const safeHtml = DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
-    mainEl.innerHTML = safeHtml;
+    mainEl.innerHTML =
+      '<div class="doc-toolbar"><button class="btn-copy-md" title="Copy as Markdown">Copy MD</button></div>' +
+      safeHtml;
+
+    // Wire up copy button
+    mainEl.querySelector('.btn-copy-md').addEventListener('click', function () {
+      navigator.clipboard.writeText(markdown).then(() => {
+        this.textContent = 'Copied!';
+        setTimeout(() => { this.textContent = 'Copy MD'; }, 1500);
+      });
+    });
   } catch (err) {
     console.error('Failed to render doc:', err);
     mainEl.innerHTML = '<p>Error loading document.</p>';
@@ -1045,6 +1055,31 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Close mobile menu on navigation
   sidebar.addEventListener('click', e => {
     if (e.target.closest('a[href]')) closeMobileMenu();
+  });
+
+  // Theme toggle
+  const themeToggle = document.getElementById('theme-toggle');
+  function applyThemeUI(theme) {
+    const icon = themeToggle.querySelector('.theme-toggle-icon');
+    const label = themeToggle.querySelector('.theme-toggle-label');
+    if (theme === 'light') {
+      icon.textContent = '\u2600\uFE0F';
+      label.textContent = 'Light';
+    } else {
+      icon.textContent = '\uD83C\uDF19';
+      label.textContent = 'Dark';
+    }
+  }
+
+  // Set initial UI to match applied theme
+  applyThemeUI(document.documentElement.getAttribute('data-theme') || 'dark');
+
+  themeToggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('keloia_theme', next);
+    applyThemeUI(next);
   });
 
   // Search modal — trigger button

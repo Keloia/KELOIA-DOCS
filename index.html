@@ -46,6 +46,23 @@
         <li><a href="#/docs/mcp-guide" data-view="docs" data-slug="mcp-guide">MCP Setup Guide</a></li>
       </ul>
     </section>
+
+    <section class="nav-section" id="auth-section">
+      <div class="unauth-only">
+        <input
+          type="password"
+          id="token-input"
+          class="token-input"
+          placeholder="GitHub PAT..."
+          autocomplete="off"
+        />
+        <button id="login-btn" class="btn-auth">Login</button>
+        <p id="login-error" class="login-error" hidden></p>
+      </div>
+      <div class="auth-only">
+        <button id="logout-btn" class="btn-auth btn-logout">Logout</button>
+      </div>
+    </section>
   </nav>
 
   <main id="main"></main>

@@ -116,70 +116,139 @@ body {
 }
 
 /* ============================================================
-   Search
+   Search Trigger (sidebar)
    ============================================================ */
 .search-container {
   position: relative;
   margin-bottom: 1rem;
 }
 
-.search-input {
+.search-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   padding: 0.5rem 0.75rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 6px;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-size: 0.85rem;
   font-family: inherit;
-  outline: none;
+  cursor: pointer;
   transition: border-color 0.15s ease;
 }
 
-.search-input:focus {
+.search-trigger:hover {
   border-color: var(--accent);
 }
 
-.search-input::placeholder {
+.search-trigger-text {
+  opacity: 0.7;
+}
+
+.search-trigger-kbd {
+  font-size: 0.7rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.1em 0.4em;
+  color: var(--text-secondary);
+  font-family: inherit;
+}
+
+/* ============================================================
+   Search Modal
+   ============================================================ */
+.search-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 15vh;
+  z-index: 300;
+}
+
+.search-modal-box {
+  max-width: 600px;
+  width: 90%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.search-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.search-modal-header input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.search-modal-header input::placeholder {
   color: var(--text-secondary);
   opacity: 0.7;
 }
 
-.search-results {
-  list-style: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: var(--bg-secondary);
+.search-kbd {
+  font-size: 0.7rem;
+  background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 0 0 6px 6px;
-  max-height: 300px;
+  border-radius: 3px;
+  padding: 0.15em 0.45em;
+  color: var(--text-secondary);
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.search-modal-results {
+  list-style: none;
+  max-height: 400px;
   overflow-y: auto;
-  z-index: 100;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  margin: 0;
+  padding: 0;
+}
+
+.search-modal-results:empty {
+  display: none;
 }
 
 .search-result-item a {
   display: block;
-  padding: 0.5rem 0.75rem;
+  padding: 0.6rem 1rem;
   color: var(--text-primary);
   text-decoration: none;
   border-bottom: 1px solid var(--border);
+  transition: background 0.1s ease;
 }
 
 .search-result-item:last-child a {
   border-bottom: none;
 }
 
-.search-result-item a:hover {
+.search-result-item a:hover,
+.search-result-item.search-result-active a {
   background: var(--bg-card);
 }
 
 .result-title {
   display: block;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   margin-bottom: 0.2rem;
 }
 
@@ -191,6 +260,26 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.search-modal-footer {
+  display: flex;
+  gap: 1.25rem;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.search-modal-footer kbd {
+  font-size: 0.7rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.1em 0.35em;
+  font-family: inherit;
+  color: var(--text-secondary);
+  margin: 0 0.1em;
 }
 
 /* ============================================================
@@ -1107,11 +1196,16 @@ body.authenticated .doc-actions.auth-only {
     margin-bottom: 0.5rem;
   }
 
-  .search-results {
-    position: fixed;
-    left: 1rem;
-    right: 1rem;
-    top: auto;
+  .search-trigger-kbd {
+    display: none;
+  }
+
+  .search-modal-overlay {
+    padding-top: 5vh;
+  }
+
+  .search-modal-box {
+    width: 95%;
   }
 
   /* Kanban: stack columns vertically on mobile */

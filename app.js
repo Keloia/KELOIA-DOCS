@@ -462,9 +462,9 @@ async function buildSearchIndex() {
   indexBuilding = false;
 
   // If the user typed while the index was building, trigger a search now
-  const searchInput = document.getElementById('search-input');
-  if (searchInput && searchInput.value.trim()) {
-    handleSearch(searchInput.value);
+  const modalInput = document.getElementById('search-modal-input');
+  if (modalInput && modalInput.value.trim()) {
+    handleSearch(modalInput.value);
   }
 }
 
@@ -489,33 +489,64 @@ function extractSnippet(text, query, windowSize = 120) {
   return snippet;
 }
 
+/* ---- Search Modal Logic ---- */
+let searchActiveIndex = -1;
+let searchCurrentResults = [];
+
+function openSearchModal() {
+  const modal = document.getElementById('search-modal');
+  const input = document.getElementById('search-modal-input');
+  modal.hidden = false;
+  input.value = '';
+  document.getElementById('search-modal-results').innerHTML = '';
+  searchActiveIndex = -1;
+  searchCurrentResults = [];
+  input.focus();
+  buildSearchIndex();
+}
+
+function closeSearchModal() {
+  const modal = document.getElementById('search-modal');
+  modal.hidden = true;
+  document.getElementById('search-modal-input').value = '';
+  document.getElementById('search-modal-results').innerHTML = '';
+  searchActiveIndex = -1;
+  searchCurrentResults = [];
+}
+
 function renderSearchResults(results, query) {
-  const container = document.getElementById('search-results');
+  const container = document.getElementById('search-modal-results');
+  searchCurrentResults = results || [];
+  searchActiveIndex = -1;
+
   if (!results || results.length === 0) {
-    container.hidden = true;
     container.innerHTML = '';
     return;
   }
 
-  container.innerHTML = results.map(r => `
-    <li class="search-result-item">
+  container.innerHTML = results.map((r, i) => `
+    <li class="search-result-item" data-index="${i}">
       <a href="#/docs/${escapeHtml(r.slug)}">
         <span class="result-title">${escapeHtml(r.title)}</span>
         <span class="result-snippet">${escapeHtml(extractSnippet(r.text, query))}</span>
       </a>
     </li>
   `).join('');
-  container.hidden = false;
 
-  // Add click listeners for immediate visual feedback
   container.querySelectorAll('.search-result-item a').forEach(link => {
-    link.addEventListener('click', () => {
-      const searchInput = document.getElementById('search-input');
-      if (searchInput) searchInput.value = '';
-      container.hidden = true;
-      container.innerHTML = '';
-    });
+    link.addEventListener('click', () => closeSearchModal());
   });
+}
+
+function updateSearchHighlight() {
+  const items = document.querySelectorAll('#search-modal-results .search-result-item');
+  items.forEach((item, i) => {
+    item.classList.toggle('search-result-active', i === searchActiveIndex);
+  });
+  // Scroll active item into view
+  if (searchActiveIndex >= 0 && items[searchActiveIndex]) {
+    items[searchActiveIndex].scrollIntoView({ block: 'nearest' });
+  }
 }
 
 const handleSearch = debounce((query) => {
@@ -523,7 +554,7 @@ const handleSearch = debounce((query) => {
     renderSearchResults([]);
     return;
   }
-  const results = searchIndex.search(query, { prefix: true, boost: { title: 2 }, fuzzy: 0.2, limit: 5 });
+  const results = searchIndex.search(query, { prefix: true, boost: { title: 2 }, fuzzy: 0.2, limit: 10 });
   renderSearchResults(results, query);
 }, 150);
 
@@ -931,11 +962,9 @@ async function router() {
     subview = parts[3] || null;
   }
 
-  // Clear search state on navigation
-  const searchInput = document.getElementById('search-input');
-  const searchResults = document.getElementById('search-results');
-  if (searchInput) searchInput.value = '';
-  if (searchResults) { searchResults.hidden = true; searchResults.innerHTML = ''; }
+  // Close search modal on navigation
+  const searchModal = document.getElementById('search-modal');
+  if (searchModal && !searchModal.hidden) closeSearchModal();
 
   switch (view) {
     case 'docs':
@@ -988,22 +1017,68 @@ window.addEventListener('DOMContentLoaded', async () => {
     window.location.hash = '#/docs/new';
   });
 
-  // Search event listeners
-  const searchInput = document.getElementById('search-input');
-  if (searchInput) {
-    searchInput.addEventListener('focus', () => buildSearchIndex(), { once: true });
-    searchInput.addEventListener('input', e => handleSearch(e.target.value));
+  // Search modal — trigger button
+  const searchTrigger = document.getElementById('search-trigger');
+  if (searchTrigger) {
+    searchTrigger.addEventListener('click', () => openSearchModal());
   }
 
-  // Close search results when clicking outside the search container
-  document.addEventListener('click', e => {
-    if (!e.target.closest('.search-container')) {
-      const searchResults = document.getElementById('search-results');
-      const si = document.getElementById('search-input');
-      if (searchResults) { searchResults.hidden = true; searchResults.innerHTML = ''; }
-      if (si) si.value = '';
+  // Search modal — Cmd+K / Ctrl+K global shortcut
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      const modal = document.getElementById('search-modal');
+      if (modal.hidden) {
+        openSearchModal();
+      } else {
+        closeSearchModal();
+      }
     }
   });
+
+  // Search modal — input, keyboard nav, escape, backdrop click
+  const modalInput = document.getElementById('search-modal-input');
+  const modalOverlay = document.getElementById('search-modal');
+
+  if (modalInput) {
+    modalInput.addEventListener('input', e => handleSearch(e.target.value));
+
+    modalInput.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        closeSearchModal();
+        return;
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (searchCurrentResults.length === 0) return;
+        searchActiveIndex = (searchActiveIndex + 1) % searchCurrentResults.length;
+        updateSearchHighlight();
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (searchCurrentResults.length === 0) return;
+        searchActiveIndex = (searchActiveIndex - 1 + searchCurrentResults.length) % searchCurrentResults.length;
+        updateSearchHighlight();
+        return;
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (searchActiveIndex >= 0 && searchCurrentResults[searchActiveIndex]) {
+          window.location.hash = '#/docs/' + searchCurrentResults[searchActiveIndex].slug;
+          closeSearchModal();
+        }
+        return;
+      }
+    });
+  }
+
+  // Backdrop click closes modal
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', e => {
+      if (e.target === modalOverlay) closeSearchModal();
+    });
+  }
 
   // Login handler
   const loginBtn = document.getElementById('login-btn');

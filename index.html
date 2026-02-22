@@ -18,14 +18,10 @@
     </div>
 
     <div class="search-container">
-      <input
-        type="search"
-        id="search-input"
-        class="search-input"
-        placeholder="Search docs..."
-        autocomplete="off"
-      />
-      <ul id="search-results" class="search-results" hidden></ul>
+      <button type="button" id="search-trigger" class="search-trigger">
+        <span class="search-trigger-text">Search docs...</span>
+        <kbd class="search-trigger-kbd">⌘K</kbd>
+      </button>
     </div>
 
     <section class="nav-section">
@@ -62,6 +58,20 @@
       </div>
     </section>
   </nav>
+
+  <div id="search-modal" class="search-modal-overlay" hidden>
+    <div class="search-modal-box">
+      <div class="search-modal-header">
+        <input type="search" id="search-modal-input" placeholder="Search products, pages, and features..." autocomplete="off" />
+        <kbd class="search-kbd">Esc</kbd>
+      </div>
+      <ul id="search-modal-results" class="search-modal-results"></ul>
+      <div class="search-modal-footer">
+        <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> to navigate</span>
+        <span><kbd>Enter</kbd> to select</span>
+      </div>
+    </div>
+  </div>
 
   <main id="main"></main>
 </body>

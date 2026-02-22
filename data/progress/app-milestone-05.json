@@ -2,8 +2,8 @@
   "id": "app-milestone-05",
   "phase": 5,
   "title": "WA BFF: Webhook Pipeline",
-  "status": "not-started",
+  "status": "done",
   "tasksTotal": 7,
-  "tasksCompleted": 0,
-  "notes": "Webhook verification, normalization, phone lookup, dedup, rate limiting"
+  "tasksCompleted": 7,
+  "notes": "Webhook verification (HMAC-SHA256), payload normalization, phone resolution (KV), dedup (24h TTL), rate limiting (10/min), inbound handler with AI_QUEUE enqueue. 30 tests passing."
 }

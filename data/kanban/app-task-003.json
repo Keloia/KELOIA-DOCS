@@ -1,7 +1,7 @@
 {
   "id": "app-task-003",
   "title": "Core domain — payment and asset services",
-  "column": "Backlog",
+  "column": "Done",
   "description": "Implement recordPayment with overpayment detection, getFinancialSummary with db.batch(), asset list with maintenance enrichment, logMaintenance with auto-status-change, and internal routes.",
   "assignee": null
 }

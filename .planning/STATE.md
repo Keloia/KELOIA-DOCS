@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** When a markdown or JSON file changes, both humans (via the site) and AI tools (via MCP) see the update immediately — no build pipeline, no deploy step, no sync.
-**Current focus:** v2.0 Search + Auth + CRUD — Phase 9 plan 01 complete, Phase 10 next
+**Current focus:** v2.0 Search + Auth + CRUD — Phase 10 plan 01 complete, Plan 02 next
 
 ## Current Position
 
-Phase: 9 of 11 (GitHub API Wrapper)
-Plan: 1 of 1 complete
-Status: Phase complete
-Last activity: 2026-02-22 — 09-01 complete (GitHub Contents API wrapper: getFile, writeFile, deleteFile, serialized write queue, Unicode-safe Base64)
+Phase: 10 of 11 (Site Doc CRUD)
+Plan: 1 of 2 complete
+Status: In progress
+Last activity: 2026-02-22 — 10-01 complete (Edit view with textarea pre-fill, preview toggle, writeFile save, auth-gated sidebar edit/delete buttons)
 
-Progress: [█████░░░░░] ~38% (v2.0)
+Progress: [██████░░░░] ~50% (v2.0)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13 (3 in v1.0, 7 in v1.1, 3 in v2.0)
+- Total plans completed: 14 (3 in v1.0, 7 in v1.1, 4 in v2.0)
 - Average duration: ~4 min
-- Total execution time: ~46 min
+- Total execution time: ~47 min
 
 **By Phase:**
 
@@ -36,6 +36,7 @@ Progress: [█████░░░░░] ~38% (v2.0)
 | 07-mcp-search-crud | 1 | ~4 min | ~4 min |
 | 08-github-auth | 1 | ~3 min | ~3 min |
 | 09-github-api-wrapper | 1 | ~1 min | ~1 min |
+| 10-site-doc-crud | 1 (of 2) | ~1 min | ~1 min |
 
 ## Accumulated Context
 
@@ -48,6 +49,12 @@ Recent decisions affecting v2.0:
 - Search library: MiniSearch preferred over FlexSearch — cleaner snippet API for this corpus size
 - Mobile kanban DnD: explicitly out of scope for v2.0 — HTML5 DnD does not fire on iOS/Android
 - MCP doc tools: separate add_doc and edit_doc (not upsert) — descriptions must explicitly exclude each other's use case
+
+Phase 10 decisions:
+- Use HTML entity references (&#9999; &#x2715;) instead of UTF-8 emoji literals for edit/delete icon buttons — avoids encoding ambiguity in template literals
+- Set textarea.value after innerHTML assignment — never use innerHTML or template literals for textarea content (anti-pattern per RESEARCH.md)
+- Hide textarea during preview (textarea.hidden = true) instead of destroying it — preserves .value without re-fetch
+- showDeleteModal stub uses alert() — Plan 02 replaces with full modal implementation
 
 Phase 9 decisions:
 - Plain function declarations used in github.js for global exposure — no window.x assignment needed
@@ -81,5 +88,5 @@ Phase 6 decisions:
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 09-01-PLAN.md (GitHub Contents API wrapper: github.js with getFile, writeFile, deleteFile, serialized write queue, Unicode-safe Base64)
-Resume with: `/gsd:execute-phase 10` (Phase 10 — Doc CRUD)
+Stopped at: Completed 10-01-PLAN.md (Edit view: renderEditView, router subview extension, auth-gated sidebar edit/delete buttons, CSS)
+Resume with: `/gsd:execute-phase 10` (Phase 10 — Doc CRUD, Plan 02: create view + real delete modal)

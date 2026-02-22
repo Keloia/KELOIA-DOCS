@@ -5,5 +5,5 @@
   "status": "done",
   "tasksTotal": 5,
   "tasksCompleted": 5,
-  "notes": "pnpm workspaces, Turborepo, shared Drizzle schema, Zod schemas, D1 migration. Completed 2026-02-22."
+  "notes": "pnpm workspaces, Turborepo, shared Drizzle schema (all tables), Zod schemas, utils, D1 migration. All complete."
 }

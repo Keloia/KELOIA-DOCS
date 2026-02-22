@@ -412,7 +412,7 @@ async function buildSearchIndex() {
   try {
     const res = await fetch('data/docs/index.json');
     const data = await res.json();
-    const docs = [...data.docs, { slug: 'mcp-guide', title: 'MCP Setup Guide' }];
+    const docs = data.docs;
 
     const documents = await Promise.all(
       docs.map(async doc => {
@@ -553,6 +553,8 @@ async function renderEditView(slug) {
     saveBtn.textContent = 'Saving...';
     try {
       await writeFile('data/docs/' + slug + '.md', textarea.value, 'docs: update ' + slug);
+      searchIndex = null;
+      buildSearchIndex();
       window.location.hash = '#/docs/' + slug;
     } catch (err) {
       saveBtn.disabled = false;
@@ -682,6 +684,9 @@ async function renderCreateView() {
       indexData.docs.push({ slug, title });
       await writeFile('data/docs/index.json', JSON.stringify(indexData, null, 2), 'docs: add ' + slug);
 
+      searchIndex = null;
+      buildSearchIndex();
+
       // Refresh sidebar
       await populateDocList();
 
@@ -741,6 +746,9 @@ function showDeleteModal(slug, title) {
       // Then delete the file
       await deleteFile('data/docs/' + slug + '.md', 'docs: delete ' + slug);
 
+      searchIndex = null;
+      buildSearchIndex();
+
       // Remove overlay
       overlay.remove();
 
@@ -782,6 +790,10 @@ async function router() {
         await renderCreateView();
         updateActiveNav('docs', null);
       } else if (subview === 'edit' && param) {
+        if (!getAuthToken()) {
+          window.location.hash = '#/docs/' + param;
+          return;
+        }
         await renderEditView(param);
         updateActiveNav('docs', param);
         break;

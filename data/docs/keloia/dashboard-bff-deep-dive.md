@@ -1,7 +1,9 @@
 # Keloia — Dashboard BFF Deep Dive
 
 **From Login to Real-Time Operational View**
-February 2026
+February 2026 — v2
+
+> **v2 changelog:** Added OTP delivery provider abstraction (Section 2e) — Fonnte WA gateway as production delivery, replacing inline queue/console logic. Updated file structure (Section 13) and wrangler config (Section 12).
 
 ---
 
@@ -69,9 +71,11 @@ Browser                    dashboard-bff              core-domain          Whats
                            ├─ KV.put(otp:{phone}, { code, attempts: 0 },
                            │         { expirationTtl: 300 })  // 5 min
                            │
-                           └─ Queue → WA outbound ─────────────────────► "Kode login Keloia
-                                                                          Anda: 847291.
-                                                                          Berlaku 5 menit."
+                           ├─ Resolve OTP provider (see §2e):
+                           │   OTP_DEV_MODE? → console log
+                           │   FONNTE_TOKEN? → Fonnte WA API ──────────► "Kode OTP Keloia
+                           │   else          → WA_OUTBOUND queue          Anda: 847291.
+                           │                                               Berlaku 5 menit."
 
 3. User reads OTP on phone
 
@@ -173,6 +177,108 @@ export function clearCookie(): string {
 ```
 
 **Why KV for sessions, not D1:** Sessions are read on *every single request*. KV reads are sub-millisecond from cache. D1 reads require a query round-trip. At dashboard scale this difference is small, but there's no reason to pay it. KV's built-in TTL also handles session expiry automatically — no cleanup cron needed.
+
+### 2e. OTP Delivery — Provider Abstraction
+
+**Constraint:** WhatsApp Business API requires Meta approval (business verification, message template review). This process can take weeks and isn't available at MVP launch. We need OTP delivery now.
+
+**Solution:** A provider abstraction in `packages/dashboard-bff/src/auth/otp-delivery.ts` with three implementations and a priority-based resolver.
+
+```typescript
+// packages/dashboard-bff/src/auth/otp-delivery.ts
+
+export type OtpDeliveryProvider = {
+  send(phone: string, code: string): Promise<void>
+}
+
+// 1. Dev: logs to console (local development)
+export function createDevProvider(): OtpDeliveryProvider
+
+// 2. Fonnte: Indonesian WA gateway (production — no Meta approval needed)
+export function createFonnteProvider(token: string): OtpDeliveryProvider
+
+// 3. WA Queue: existing WA_OUTBOUND queue (future Meta Business API)
+export function createWaQueueProvider(queue: Queue): OtpDeliveryProvider
+```
+
+**Provider resolution priority:**
+
+```typescript
+export function getOtpProvider(env: Env): OtpDeliveryProvider {
+  if (env.OTP_DEV_MODE === 'true') return createDevProvider()
+  if (env.FONNTE_TOKEN) return createFonnteProvider(env.FONNTE_TOKEN)
+  return createWaQueueProvider(env.WA_OUTBOUND)
+}
+```
+
+| Priority | Provider | When active | How it works |
+|---|---|---|---|
+| 1st | **Dev** | `OTP_DEV_MODE=true` | Logs OTP to console. Local dev only. |
+| 2nd | **Fonnte** | `FONNTE_TOKEN` set | HTTP POST to `api.fonnte.com/send` with FormData. Sends from your personal WhatsApp number. |
+| 3rd | **WA Queue** | Default fallback | Enqueues to `WA_OUTBOUND` for delivery via Meta Business API pipeline. |
+
+**Why Fonnte for production MVP:**
+
+- **No Meta approval needed** — register at fonnte.com, scan QR with your WhatsApp, get a device token. Working in minutes.
+- **Sends from a real WhatsApp number** — messages appear as personal chat, not a business template. Users in Indonesia are familiar with this pattern.
+- **Zero npm dependencies** — uses `fetch()` with `FormData`, both native to Cloudflare Workers.
+- **Easy to remove** — when Meta Business API is approved, delete the `FONNTE_TOKEN` secret and the system falls through to WA Queue automatically.
+
+**Fonnte implementation:**
+
+```typescript
+export function createFonnteProvider(token: string): OtpDeliveryProvider {
+  return {
+    async send(phone, code) {
+      const form = new FormData()
+      form.append('target', phone)
+      form.append('message', `Kode OTP Keloia Anda: ${code}. Berlaku 5 menit.`)
+
+      const res = await fetch('https://api.fonnte.com/send', {
+        method: 'POST',
+        headers: { Authorization: token },
+        body: form,
+      })
+
+      if (!res.ok) {
+        throw new Error(`Fonnte API error: ${res.status}`)
+      }
+    },
+  }
+}
+```
+
+**Migration path to Meta Business API:**
+
+```
+Current:  FONNTE_TOKEN secret set → Fonnte delivers OTP
+Future:   Delete FONNTE_TOKEN → falls through to WA Queue → Meta Business API
+```
+
+No code changes needed for the migration — just secret management.
+
+**Usage in auth route (after refactor):**
+
+```typescript
+// packages/dashboard-bff/src/routes/auth.ts
+import { getOtpProvider } from '../auth/otp-delivery'
+
+// Inside POST /auth/request-otp handler:
+const code = await generateOtp(c.env.SESSIONS, phone)
+const provider = getOtpProvider(c.env)
+await provider.send(phone, code)
+```
+
+**Env binding:**
+
+```typescript
+// packages/dashboard-bff/src/env.ts
+export type Env = {
+  // ... existing bindings ...
+  FONNTE_TOKEN?: string   // Fonnte device token (set via wrangler secret)
+  OTP_DEV_MODE?: string   // 'true' for local dev console logging
+}
+```
 
 ---
 
@@ -290,7 +396,9 @@ type Env = {
     SESSIONS: KVNamespace
     CACHE: KVNamespace
     R2_EXPORTS: R2Bucket           // PDF storage
-    WA_OUTBOUND: Queue             // For OTP delivery
+    WA_OUTBOUND: Queue             // For OTP delivery (fallback)
+    FONNTE_TOKEN?: string          // Fonnte WA gateway token (production OTP)
+    OTP_DEV_MODE?: string          // Console OTP logging (dev only)
   }
 }
 
@@ -338,6 +446,7 @@ export default app
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
+import { getOtpProvider } from '../auth/otp-delivery'
 
 export const authRoutes = new Hono()
 
@@ -348,7 +457,9 @@ authRoutes.post('/request-otp',
   })),
   async (c) => {
     const { phone } = c.req.valid('json')
-    // ... resolve user, generate OTP, queue WA message
+    // ... resolve user, generate OTP
+    const provider = getOtpProvider(c.env)
+    await provider.send(phone, code)
     return c.json({ message: 'OTP terkirim ke WhatsApp Anda' })
   },
 )
@@ -1228,13 +1339,14 @@ id = "zzz"
 binding = "R2_EXPORTS"
 bucket_name = "keloia-exports"
 
-# Queue for OTP delivery via WhatsApp
+# Queue for OTP delivery via WhatsApp (fallback when no FONNTE_TOKEN)
 [[queues.producers]]
 binding = "WA_OUTBOUND"
 queue = "keloia-wa-outbound"
 
 # Secrets (set via `wrangler secret put`):
-# (none for dashboard-bff — auth uses KV sessions, no signing keys needed)
+# FONNTE_TOKEN  — Fonnte device token for WhatsApp OTP delivery (production)
+# OTP_DEV_MODE  — set to "true" for console OTP logging (dev/staging only)
 ```
 
 ---
@@ -1245,8 +1357,10 @@ queue = "keloia-wa-outbound"
 packages/dashboard-bff/
 ├── src/
 │   ├── index.ts                  # Hono app, route mounting, AppType export
+│   ├── env.ts                    # Env type (bindings incl. FONNTE_TOKEN)
 │   ├── auth/
 │   │   ├── otp.ts                # OTP generation, verification, rate limiting
+│   │   ├── otp-delivery.ts       # OTP delivery provider abstraction (dev/Fonnte/WA queue)
 │   │   └── session.ts            # KV session CRUD, cookie helpers
 │   ├── middleware/
 │   │   ├── auth.ts               # Session verification middleware

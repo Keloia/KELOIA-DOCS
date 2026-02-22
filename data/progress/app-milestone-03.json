@@ -5,5 +5,5 @@
   "status": "done",
   "tasksTotal": 5,
   "tasksCompleted": 5,
-  "notes": "Payment recording, financial summary, bus CRUD, maintenance logging, 22 service tests. Completed 2026-02-22."
+  "notes": "Payment recording, financial summary, bus management, maintenance logging. 22 tests (9 payment + 13 asset) passing."
 }

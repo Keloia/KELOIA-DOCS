@@ -2,8 +2,8 @@
   "id": "app-milestone-04",
   "phase": 4,
   "title": "Core Domain: Alerts & Team",
-  "status": "not-started",
+  "status": "done",
   "tasksTotal": 8,
-  "tasksCompleted": 0,
-  "notes": "Alert engine, action router, tenant service, invite codes, role management"
+  "tasksCompleted": 8,
+  "notes": "Alert service (list, dismiss, count), team service (register, update, list, get, remove), 37 service tests. Completed 2026-02-22."
 }

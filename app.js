@@ -227,6 +227,52 @@ function debounce(fn, delay) {
 }
 
 /* ============================================================
+   Authentication
+   ============================================================ */
+const TOKEN_KEY = 'keloia_gh_token';
+let currentToken = null;
+
+async function verifyToken(token) {
+  try {
+    const res = await fetch('https://api.github.com/user', {
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Accept': 'application/vnd.github+json'
+      }
+    });
+    return res.ok;
+  } catch (err) {
+    return false;
+  }
+}
+
+function setAuthState(token) {
+  currentToken = token;
+  if (token) {
+    document.body.classList.add('authenticated');
+  } else {
+    document.body.classList.remove('authenticated');
+  }
+}
+
+function getAuthToken() {
+  return currentToken;
+}
+
+async function initAuth() {
+  const stored = localStorage.getItem(TOKEN_KEY);
+  if (!stored) return;
+
+  const valid = await verifyToken(stored);
+  if (valid) {
+    setAuthState(stored);
+  } else {
+    localStorage.removeItem(TOKEN_KEY);
+    setAuthState(null);
+  }
+}
+
+/* ============================================================
    Site Search
    ============================================================ */
 let searchIndex = null;
@@ -367,6 +413,7 @@ async function router() {
 window.addEventListener('hashchange', router);
 window.addEventListener('DOMContentLoaded', async () => {
   await populateDocList();
+  initAuth(); // non-blocking — verifies stored token in background
   await router();
 
   // Search event listeners
@@ -385,4 +432,51 @@ window.addEventListener('DOMContentLoaded', async () => {
       if (si) si.value = '';
     }
   });
+
+  // Login handler
+  const loginBtn = document.getElementById('login-btn');
+  const tokenInput = document.getElementById('token-input');
+  const loginError = document.getElementById('login-error');
+
+  if (loginBtn) {
+    loginBtn.addEventListener('click', async () => {
+      const token = tokenInput.value.trim();
+      if (!token) return;
+
+      // Disable button, show verifying state
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Verifying...';
+      loginError.hidden = true;
+
+      const valid = await verifyToken(token);
+
+      if (valid) {
+        localStorage.setItem(TOKEN_KEY, token);
+        setAuthState(token);
+        tokenInput.value = '';
+      } else {
+        loginError.textContent = 'Invalid token. Check and try again.';
+        loginError.hidden = false;
+      }
+
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Login';
+    });
+  }
+
+  // Enter key triggers login
+  if (tokenInput) {
+    tokenInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && loginBtn) loginBtn.click();
+    });
+  }
+
+  // Logout handler
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem(TOKEN_KEY);
+      setAuthState(null);
+    });
+  }
 });

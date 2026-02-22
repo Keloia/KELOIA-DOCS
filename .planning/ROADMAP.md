@@ -124,7 +124,9 @@ Plans:
   2. A confirmation modal appears after the drop, naming the task title and destination column — the move is not saved until the user confirms
   3. After confirmation, the card appears in the new column on the board and the change is persisted via the GitHub Contents API
   4. Drag handles and drop zones are not present when the user is not authenticated
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 11-01-PLAN.md — Draggable cards, DnD event wiring, move confirmation modal, drag CSS (KNBN-01, KNBN-02, KNBN-03)
 
 ## Progress
 

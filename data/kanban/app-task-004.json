@@ -1,7 +1,7 @@
 {
   "id": "app-task-004",
   "title": "Core domain — alerts, action router, and team management",
-  "column": "Backlog",
+  "column": "Done",
   "description": "Add alerts table migration, alert evaluation engine (json_each for role filtering), action router for WA BFF intent dispatch, tenant service (create tenant, invite codes, team registration), and internal routes.",
   "assignee": null
 }

@@ -5,5 +5,5 @@
   "status": "done",
   "tasksTotal": 7,
   "tasksCompleted": 7,
-  "notes": "Dashboard BFF Worker complete: WhatsApp OTP auth (dev mode + WA_OUTBOUND), KV sessions (7d TTL), RBAC middleware, error handler, KV read-through cache, core-client proxy, all API routes (auth, schedule, assets, financials, alerts, settings), AppType export, ServiceResult moved to @keloia/shared. 28 tests passing across 5 test files."
+  "notes": "WhatsApp OTP auth, KV sessions (30d), RBAC middleware (owner/admin/driver), API routes (schedule, assets, financials, alerts, settings), Service Binding proxy, error handler, cache helper. 28 tests passing."
 }

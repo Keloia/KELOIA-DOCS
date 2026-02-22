@@ -97,7 +97,9 @@ Plans:
   2. Saving a doc containing non-ASCII characters (em dash, smart quotes, curly quotes) completes without an `InvalidCharacterError`
   3. Decoding a file fetched from the GitHub API succeeds in all browsers without whitespace errors
   4. Every update and delete operation fetches the current file SHA immediately before the write — no cached SHAs are reused
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 09-01-PLAN.md — GitHub Contents API wrapper module (github.js) with serialized write queue
 
 ### Phase 10: Site Doc CRUD
 **Goal**: Authenticated users can create, edit, and delete docs from the site, with all changes committed to the repository via the GitHub Contents API
@@ -133,6 +135,6 @@ Plans:
 | 6. Site Search + Guide | 2/2 | Complete    | 2026-02-21 | - |
 | 7. MCP Search + Doc CRUD Tools | 1/1 | Complete   | 2026-02-22 | - |
 | 8. GitHub Auth | 1/1 | Complete   | 2026-02-22 | - |
-| 9. GitHub API Wrapper | v2.0 | 0/TBD | Not started | - |
+| 9. GitHub API Wrapper | v2.0 | 0/1 | Not started | - |
 | 10. Site Doc CRUD | v2.0 | 0/TBD | Not started | - |
 | 11. Interactive Kanban | v2.0 | 0/TBD | Not started | - |

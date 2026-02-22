@@ -1,7 +1,7 @@
 {
   "id": "app-task-001",
   "title": "Monorepo foundation and shared package",
-  "column": "In Progress",
+  "column": "Done",
   "description": "Bootstrap pnpm workspace, Turborepo, shared Drizzle schema (all tables), Zod validation schemas, utility helpers (formatDateID, ulid), and initial D1 migration.",
   "assignee": null
 }

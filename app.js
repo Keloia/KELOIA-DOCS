@@ -1017,6 +1017,36 @@ window.addEventListener('DOMContentLoaded', async () => {
     window.location.hash = '#/docs/new';
   });
 
+  // Mobile menu toggle
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+  function closeMobileMenu() {
+    sidebar.classList.remove('is-open');
+    mobileMenuBtn.classList.remove('is-active');
+    sidebarBackdrop.classList.remove('is-visible');
+  }
+
+  function toggleMobileMenu() {
+    const isOpen = sidebar.classList.toggle('is-open');
+    mobileMenuBtn.classList.toggle('is-active', isOpen);
+    sidebarBackdrop.classList.toggle('is-visible', isOpen);
+  }
+
+  if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+  }
+
+  if (sidebarBackdrop) {
+    sidebarBackdrop.addEventListener('click', closeMobileMenu);
+  }
+
+  // Close mobile menu on navigation
+  sidebar.addEventListener('click', e => {
+    if (e.target.closest('a[href]')) closeMobileMenu();
+  });
+
   // Search modal — trigger button
   const searchTrigger = document.getElementById('search-trigger');
   if (searchTrigger) {

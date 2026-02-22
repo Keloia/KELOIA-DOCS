@@ -36,9 +36,9 @@ Requirements for v2.0 release. Each maps to roadmap phases.
 
 ### Kanban
 
-- [ ] **KNBN-01**: Authenticated user can drag kanban cards between columns
-- [ ] **KNBN-02**: A confirmation modal appears before saving the column change
-- [ ] **KNBN-03**: Column change is persisted via GitHub Contents API
+- [x] **KNBN-01**: Authenticated user can drag kanban cards between columns
+- [x] **KNBN-02**: A confirmation modal appears before saving the column change
+- [x] **KNBN-03**: Column change is persisted via GitHub Contents API
 
 ### Guide
 
@@ -109,9 +109,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CRUD-02 | Phase 10 | Complete |
 | CRUD-03 | Phase 10 | Complete |
 | CRUD-04 | Phase 10 | Complete |
-| KNBN-01 | Phase 11 | Pending |
-| KNBN-02 | Phase 11 | Pending |
-| KNBN-03 | Phase 11 | Pending |
+| KNBN-01 | Phase 11 | Complete |
+| KNBN-02 | Phase 11 | Complete |
+| KNBN-03 | Phase 11 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 23 total

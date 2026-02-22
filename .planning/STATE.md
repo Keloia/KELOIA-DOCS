@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 10 of 11 (Site Doc CRUD)
-Plan: 2 of 2 complete
+Phase: 11 of 11 (Interactive Kanban)
+Plan: 1 of 1 complete
 Status: Phase complete
-Last activity: 2026-02-22 — 10-02 complete (Create view with slug validation + two-step write, delete modal with title confirmation + two-step delete, New Doc button auth-gated in sidebar)
+Last activity: 2026-02-22 — 11-01 complete (HTML5 drag-and-drop on kanban cards: wireDragAndDrop, showMoveModal, drag feedback CSS, auth-gated draggable attributes)
 
-Progress: [████████░░] ~80% (v2.0)
+Progress: [██████████] ~100% (v2.0)
 
 ## Performance Metrics
 
@@ -37,6 +37,7 @@ Progress: [████████░░] ~80% (v2.0)
 | 08-github-auth | 1 | ~3 min | ~3 min |
 | 09-github-api-wrapper | 1 | ~1 min | ~1 min |
 | 10-site-doc-crud | 2 (of 2) | ~3 min | ~1.5 min |
+| 11-interactive-kanban | 1 (of 1) | ~1 min | ~1 min |
 
 ## Accumulated Context
 
@@ -49,6 +50,12 @@ Recent decisions affecting v2.0:
 - Search library: MiniSearch preferred over FlexSearch — cleaner snippet API for this corpus size
 - Mobile kanban DnD: explicitly out of scope for v2.0 — HTML5 DnD does not fire on iOS/Android
 - MCP doc tools: separate add_doc and edit_doc (not upsert) — descriptions must explicitly exclude each other's use case
+
+Phase 11 decisions:
+- wireDragAndDrop uses closure state (draggedTaskId/Title/SourceColumn) reset on dragend — avoids stale state if drag cancelled
+- getFile called at confirm time inside showMoveModal, not at drag-start — consistent with Phase 9 SHA discipline
+- Drop on same column silently ignored via source === target check before showMoveModal
+- col-drop-over dragleave uses col.contains(e.relatedTarget) guard — prevents flicker when hovering over card children inside the column
 
 Phase 10 decisions:
 - Use HTML entity references (&#9999; &#x2715;) instead of UTF-8 emoji literals for edit/delete icon buttons — avoids encoding ambiguity in template literals
@@ -91,5 +98,5 @@ Phase 6 decisions:
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 10-02-PLAN.md (Create view: renderCreateView, showDeleteModal with confirmation modal, New Doc sidebar button, form/modal CSS)
-Resume with: `/gsd:execute-phase 11` (Phase 11 — next phase)
+Stopped at: Completed 11-01-PLAN.md (Interactive kanban: wireDragAndDrop, showMoveModal, drag feedback CSS — v2.0 complete)
+Resume with: v2.0 complete — no remaining phases

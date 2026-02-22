@@ -5,5 +5,5 @@
   "status": "done",
   "tasksTotal": 7,
   "tasksCompleted": 7,
-  "notes": "ConversationState DO (RPC-style, 10-turn cap, 30min pending TTL), reply classification (button + Indonesian free-text), message router (pending vs fresh), action execution via Service Binding, WA outbound client (Meta Graph API v21.0), outbound queue consumer with retry, status handler. 75 tests passing (45 new + 30 existing)."
+  "notes": "ConversationState Durable Object, reply classification (button + free-text Indonesian), message router, action execution via Service Binding, outbound WA client, confirmation prompt formatting. 22 tests passing."
 }

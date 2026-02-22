@@ -1,7 +1,7 @@
 {
   "id": "app-task-007",
   "title": "AI processor worker",
-  "column": "Backlog",
+  "column": "In Progress",
   "description": "Scaffold ai-processor Queue consumer, implement Claude intent extraction prompt (Indonesian, role-aware), AI pipeline with Zod response parsing, result delivery (high/low confidence routing), error handling with Queue retry.",
   "assignee": null
 }

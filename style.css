@@ -171,6 +171,10 @@ body {
   z-index: 300;
 }
 
+.search-modal-overlay[hidden] {
+  display: none;
+}
+
 .search-modal-box {
   max-width: 600px;
   width: 90%;

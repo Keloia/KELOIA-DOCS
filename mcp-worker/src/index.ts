@@ -23,4 +23,17 @@ export class KeloiaMCP extends McpAgent<WorkerEnv, {}, {}> {
   }
 }
 
-export default KeloiaMCP.mount("/mcp");
+// Wrap the default handler to intercept OAuth discovery requests.
+// MCP clients probe /.well-known/oauth-authorization-server before connecting.
+// This server doesn't use OAuth, so return 404 to let clients skip auth.
+const mcpHandler = KeloiaMCP.mount("/mcp");
+
+export default {
+  async fetch(request: Request, env: WorkerEnv, ctx: ExecutionContext): Promise<Response> {
+    const url = new URL(request.url);
+    if (url.pathname.startsWith("/.well-known/")) {
+      return new Response("Not Found", { status: 404 });
+    }
+    return mcpHandler.fetch(request, env, ctx);
+  },
+};

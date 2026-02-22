@@ -5,5 +5,5 @@
   "status": "done",
   "tasksTotal": 8,
   "tasksCompleted": 8,
-  "notes": "Alert service (list, dismiss, count), team service (register, update, list, get, remove), 37 service tests. Completed 2026-02-22."
+  "notes": "Alert engine, action router, team service (tenant, invite codes, role management). 37 tests (16 alert + 21 team) passing."
 }

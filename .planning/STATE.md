@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** When a markdown or JSON file changes, both humans (via the site) and AI tools (via MCP) see the update immediately — no build pipeline, no deploy step, no sync.
-**Current focus:** v2.0 Search + Auth + CRUD — Phase 6 complete, Phase 7 next
+**Current focus:** v2.0 Search + Auth + CRUD — Phase 7 plan 01 complete, Phase 8 next
 
 ## Current Position
 
-Phase: 6 of 11 (Site Search + Guide)
-Plan: 2 of 2 complete
+Phase: 7 of 11 (MCP Search + CRUD)
+Plan: 1 of 1 complete
 Status: Phase complete
-Last activity: 2026-02-22 — 06-02 complete (MiniSearch JS logic: lazy index build, debounced search, snippet extraction, navigation clearing)
+Last activity: 2026-02-22 — 07-01 complete (MCP doc tools: keloia_search_docs, keloia_add_doc, keloia_edit_doc, keloia_delete_doc)
 
-Progress: [██░░░░░░░░] ~10% (v2.0)
+Progress: [███░░░░░░░] ~15% (v2.0)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10 (3 in v1.0, 7 in v1.1)
+- Total plans completed: 11 (3 in v1.0, 7 in v1.1, 1 in v2.0)
 - Average duration: ~4 min
 - Total execution time: ~43 min
 
@@ -33,6 +33,7 @@ Progress: [██░░░░░░░░] ~10% (v2.0)
 | 04-read-tools | 2 | ~7 min | ~3.5 min |
 | 05-write-tools | 3 | ~15 min | ~5 min |
 | 06-site-search-guide | 2 | ~9 min | ~4.5 min |
+| 07-mcp-search-crud | 1 | ~4 min | ~4 min |
 
 ## Accumulated Context
 
@@ -45,6 +46,11 @@ Recent decisions affecting v2.0:
 - Search library: MiniSearch preferred over FlexSearch — cleaner snippet API for this corpus size
 - Mobile kanban DnD: explicitly out of scope for v2.0 — HTML5 DnD does not fire on iOS/Android
 - MCP doc tools: separate add_doc and edit_doc (not upsert) — descriptions must explicitly exclude each other's use case
+
+Phase 7 decisions:
+- atomicWriteText duplicated locally in docs.ts rather than imported from write.ts — keeps modules independent, no circular dependency
+- delete_doc updates index.json FIRST before unlinkSync — ensures consistent state even on partial failure
+- keloia_search_docs resets compiled.lastIndex = 0 before every exec() — prevents match skipping across lines with stateful RegExp
 
 Phase 6 decisions:
 - mcp-guide excluded from data/docs/index.json — router handles #/docs/mcp-guide directly, avoids duplicate sidebar entries
@@ -61,5 +67,5 @@ Phase 6 decisions:
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 06-02-PLAN.md (MiniSearch JS logic: lazy index build, debounced search, snippet extraction, navigation clearing)
-Resume with: `/gsd:execute-phase 7` (Phase 7 — Auth)
+Stopped at: Completed 07-01-PLAN.md (MCP doc tools: keloia_search_docs, keloia_add_doc, keloia_edit_doc, keloia_delete_doc registered in server.ts)
+Resume with: `/gsd:execute-phase 8` (Phase 8 — Auth)

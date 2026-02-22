@@ -38,7 +38,7 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details.
 **Milestone Goal:** Transform the site from read-only to read-write with GitHub PAT authentication, full-text search across both surfaces, interactive kanban drag-and-drop, and MCP doc CRUD tools.
 
 - [x] **Phase 6: Site Search + Guide** — Full-text doc search in the sidebar and static MCP setup guide page (completed 2026-02-21)
-- [ ] **Phase 7: MCP Search + Doc CRUD Tools** — `keloia_search_docs`, `keloia_add_doc`, `keloia_edit_doc`, `keloia_delete_doc` MCP tools
+- [x] **Phase 7: MCP Search + Doc CRUD Tools** — `keloia_search_docs`, `keloia_add_doc`, `keloia_edit_doc`, `keloia_delete_doc` MCP tools (completed 2026-02-22)
 - [ ] **Phase 8: GitHub Auth** — PAT entry modal, localStorage persistence, and auth-gated write UI
 - [ ] **Phase 9: GitHub API Wrapper** — SHA-aware Contents API wrapper with serialized write queue
 - [ ] **Phase 10: Site Doc CRUD** — Authenticated add, edit (with preview), and delete for docs via the GitHub API
@@ -71,7 +71,7 @@ Plans:
   3. `keloia_add_doc` creates a new markdown file in data/docs/ and updates the doc index — fails if slug already exists
   4. `keloia_edit_doc` overwrites an existing doc file — fails if slug does not exist
   5. `keloia_delete_doc` removes the doc file and removes the slug from the index — index is updated before file deletion
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
 - [ ] 07-01-PLAN.md — Search tool + doc CRUD tools (docs.ts with all 5 tools, server registration, build)
 
@@ -129,7 +129,7 @@ Plans:
 | 4. Read Tools | v1.1 | 2/2 | Complete | 2026-02-22 |
 | 5. Write Tools + Integration | v1.1 | 3/3 | Complete | 2026-02-22 |
 | 6. Site Search + Guide | 2/2 | Complete    | 2026-02-21 | - |
-| 7. MCP Search + Doc CRUD Tools | v2.0 | 0/1 | Not started | - |
+| 7. MCP Search + Doc CRUD Tools | 1/1 | Complete   | 2026-02-22 | - |
 | 8. GitHub Auth | v2.0 | 0/TBD | Not started | - |
 | 9. GitHub API Wrapper | v2.0 | 0/TBD | Not started | - |
 | 10. Site Doc CRUD | v2.0 | 0/TBD | Not started | - |

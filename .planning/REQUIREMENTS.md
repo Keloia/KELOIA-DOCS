@@ -13,8 +13,8 @@ Requirements for v2.0 release. Each maps to roadmap phases.
 - [x] **SRCH-02**: Search results update live as user types (debounced)
 - [x] **SRCH-03**: Search results show doc name and a text snippet with the matching content
 - [x] **SRCH-04**: User can click a search result to navigate to that doc
-- [ ] **SRCH-05**: MCP tool `keloia_search_docs` searches doc content by keyword or regex
-- [ ] **SRCH-06**: MCP tool `keloia_search_docs` supports filtering by doc slug
+- [x] **SRCH-05**: MCP tool `keloia_search_docs` searches doc content by keyword or regex
+- [x] **SRCH-06**: MCP tool `keloia_search_docs` supports filtering by doc slug
 
 ### Authentication
 
@@ -30,9 +30,9 @@ Requirements for v2.0 release. Each maps to roadmap phases.
 - [ ] **CRUD-03**: User can toggle a preview of the rendered markdown while editing
 - [ ] **CRUD-04**: Authenticated user can delete a doc with a confirmation modal
 - [ ] **CRUD-05**: All site doc writes go through the GitHub Contents API (commit to repo)
-- [ ] **CRUD-06**: MCP tool `keloia_add_doc` creates a new doc file in data/docs/
-- [ ] **CRUD-07**: MCP tool `keloia_edit_doc` updates an existing doc file
-- [ ] **CRUD-08**: MCP tool `keloia_delete_doc` removes a doc file
+- [x] **CRUD-06**: MCP tool `keloia_add_doc` creates a new doc file in data/docs/
+- [x] **CRUD-07**: MCP tool `keloia_edit_doc` updates an existing doc file
+- [x] **CRUD-08**: MCP tool `keloia_delete_doc` removes a doc file
 
 ### Kanban
 
@@ -95,11 +95,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SRCH-04 | Phase 6 | Complete |
 | GUID-01 | Phase 6 | Complete |
 | GUID-02 | Phase 6 | Complete |
-| SRCH-05 | Phase 7 | Pending |
-| SRCH-06 | Phase 7 | Pending |
-| CRUD-06 | Phase 7 | Pending |
-| CRUD-07 | Phase 7 | Pending |
-| CRUD-08 | Phase 7 | Pending |
+| SRCH-05 | Phase 7 | Complete |
+| SRCH-06 | Phase 7 | Complete |
+| CRUD-06 | Phase 7 | Complete |
+| CRUD-07 | Phase 7 | Complete |
+| CRUD-08 | Phase 7 | Complete |
 | AUTH-01 | Phase 8 | Pending |
 | AUTH-02 | Phase 8 | Pending |
 | AUTH-03 | Phase 8 | Pending |

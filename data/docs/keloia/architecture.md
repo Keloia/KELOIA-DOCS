@@ -1,7 +1,9 @@
 # Keloia System Architecture
 
 **BFF Pattern on Cloudflare**
-February 2026
+February 2026 — v2
+
+> **v2 changelog:** Documented OTP delivery constraint — Fonnte WA gateway as interim production delivery method while Meta Business API approval is pending. Updated Dashboard BFF Worker description (Section 4b) and external services diagram.
 
 ---
 
@@ -55,6 +57,7 @@ Keloia uses the **Backend-for-Frontend (BFF)** pattern with two distinct fronten
 
 External:
   • Meta WhatsApp Business API (inbound/outbound messages)
+  • Fonnte WA Gateway (OTP delivery — interim, see §4b)
   • Anthropic Claude API (NLU + intent extraction)
 ```
 
@@ -144,6 +147,19 @@ Middleware:
   3. RBAC: check user.role against route permission map
   4. Service Binding → core-domain (all data reads/writes)
 ```
+
+**OTP delivery architecture:** Dashboard login requires sending a 6-digit OTP via WhatsApp. The delivery mechanism uses a provider abstraction with priority-based resolution:
+
+```
+OTP Delivery Provider Resolution:
+  1. OTP_DEV_MODE=true  → Console log (local development)
+  2. FONNTE_TOKEN set   → Fonnte WA gateway (production MVP)
+  3. Fallback           → WA_OUTBOUND queue (future Meta Business API)
+```
+
+**Why Fonnte as interim production provider:** Meta WhatsApp Business API requires business verification and message template approval — a process that takes weeks. Fonnte (fonnte.com) is an Indonesian WA gateway that sends messages from a personal WhatsApp number via a simple HTTP API (`POST api.fonnte.com/send` with FormData). No Meta approval, no npm dependencies (uses native `fetch`), working in minutes. When Meta approval arrives, removing the `FONNTE_TOKEN` secret automatically falls through to the WA queue pipeline — no code changes needed.
+
+See [Dashboard BFF Deep Dive §2e](./keloia-dashboard-bff-deep-dive.md) for full implementation details.
 
 ### 4c. Core Domain Worker (`core-domain`)
 
@@ -396,7 +412,28 @@ Browser → Pages (SPA) → dashboard-bff
     └─ 4. Return JSON → SPA renders schedule view
 ```
 
-### 6c. Morning Briefing (Cron)
+### 6c. Dashboard OTP Login
+
+```
+Browser → dashboard-bff → Fonnte API (or WA Queue)
+
+  POST /auth/request-otp { phone: "628123456789" }
+    ├─ 1. KV.get(phone:628...) → verify registered user
+    ├─ 2. Generate 6-digit OTP, store in KV (5min TTL)
+    ├─ 3. Resolve OTP provider:
+    │     ├─ OTP_DEV_MODE=true → console.log (dev)
+    │     ├─ FONNTE_TOKEN set  → POST api.fonnte.com/send (production)
+    │     └─ fallback          → WA_OUTBOUND queue (future Meta API)
+    └─ 4. Return { ok: true }
+
+  POST /auth/verify-otp { phone, code }
+    ├─ 1. Verify code against KV-stored OTP
+    ├─ 2. Create KV session (7d TTL)
+    ├─ 3. Set HttpOnly cookie
+    └─ 4. Return user info
+```
+
+### 6d. Morning Briefing (Cron)
 
 ```
 Cron Trigger (daily 5:00 AM WIB) → core-domain
@@ -429,18 +466,28 @@ Cron Trigger (daily 5:00 AM WIB) → core-domain
 
 | Resource | Owner | Admin | Driver |
 |---|---|---|---|
-| All bookings | ✅ read/write | ✅ read/write | ❌ |
-| Own trip details | ✅ | ✅ | ✅ |
-| Financial data | ✅ read/write | ✅ read only | ❌ |
-| Bus status | ✅ read/write | ✅ read only | ✅ own bus report |
-| Team settings | ✅ | ❌ | ❌ |
-| Dashboard access | ✅ full | ✅ limited | ❌ |
+| All bookings | read/write | read/write | — |
+| Own trip details | yes | yes | yes |
+| Financial data | read/write | read only | — |
+| Bus status | read/write | read only | own bus report |
+| Team settings | yes | — | — |
+| Dashboard access | full | limited | — |
 
 **WhatsApp auth model:** phone number is the identity. On first contact, user is prompted to enter a tenant invite code (shared by owner). This links their phone to a tenant + role.
 
 ---
 
-## 8. Project Structure
+## 8. External Service Dependencies
+
+| Service | Role | Status | Notes |
+|---|---|---|---|
+| **Meta WhatsApp Business API** | Inbound webhooks + outbound messages | Active (inbound) / Pending approval (outbound templates) | Full two-way messaging once approved |
+| **Fonnte WA Gateway** | OTP delivery for dashboard login | Active (production MVP) | Interim solution — sends from personal WA number via HTTP API. No Meta approval needed. Remove `FONNTE_TOKEN` to deactivate when Meta API is ready. |
+| **Anthropic Claude API** | NLU + intent extraction from Indonesian text | Active | Used by AI Processor worker via Queue |
+
+---
+
+## 9. Project Structure
 
 ```
 keloia/
@@ -473,7 +520,12 @@ keloia/
 │   │
 │   ├── dashboard-bff/         # Dashboard BFF Worker
 │   │   ├── src/
+│   │   │   ├── auth/
+│   │   │   │   ├── otp.ts            # OTP generation + verification
+│   │   │   │   ├── otp-delivery.ts   # Provider abstraction (dev/Fonnte/WA queue)
+│   │   │   │   └── session.ts        # KV session CRUD
 │   │   │   ├── routes/
+│   │   │   │   ├── auth.ts
 │   │   │   │   ├── schedule.ts
 │   │   │   │   ├── assets.ts
 │   │   │   │   ├── financials.ts
@@ -511,7 +563,7 @@ keloia/
 
 ---
 
-## 9. Wrangler Config (Key Bindings)
+## 10. Wrangler Config (Key Bindings)
 
 ### wa-bff/wrangler.toml
 ```toml
@@ -545,6 +597,36 @@ WA_VERIFY_TOKEN = "..."  # Use secrets in production
 # META_APP_SECRET
 ```
 
+### dashboard-bff/wrangler.toml
+```toml
+name = "keloia-dashboard-bff"
+main = "src/index.ts"
+
+[[services]]
+binding = "CORE"
+service = "keloia-core-domain"
+
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "xxx"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "yyy"
+
+[[kv_namespaces]]
+binding = "PHONE_LOOKUP"
+id = "zzz"
+
+[[queues.producers]]
+binding = "WA_OUTBOUND"
+queue = "keloia-wa-outbound"
+
+# Secrets (set via wrangler secret put):
+# FONNTE_TOKEN   — Fonnte device token for OTP delivery (production)
+# OTP_DEV_MODE   — "true" for console OTP logging (dev/staging)
+```
+
 ### core-domain/wrangler.toml
 ```toml
 name = "keloia-core-domain"
@@ -569,7 +651,7 @@ crons = ["0 22 * * *"]  # 5 AM WIB (UTC+7) = 22:00 UTC previous day
 
 ---
 
-## 10. Scaling & Cost Considerations
+## 11. Scaling & Cost Considerations
 
 **D1 limits at SME scale:**
 
@@ -591,17 +673,19 @@ A bus operator with 5-10 buses runs ~100-300 bookings/month. Even with 50 tenant
 | Queues | ~3K messages/month | Free tier |
 | R2 | ~50 PDFs/month (~5MB) | Free tier |
 | Claude API | ~500 calls/month | ~$5-15 |
+| Fonnte | ~100 OTP messages/month | Free tier (500 msgs/month) |
 
 The only meaningful cost is Claude API calls. Everything else fits comfortably in Cloudflare's free/starter tiers for early tenants.
 
 ---
 
-## 11. MVP Scope Boundaries
+## 12. MVP Scope Boundaries
 
 **In scope for MVP:**
 - WhatsApp BFF: message receive, AI intent extraction, confirm-before-log, basic alerts
 - Dashboard BFF: schedule view, bus status, payment tracker (read-only for admin)
 - Core domain: booking CRUD with conflict detection, payment recording, bus status
+- OTP delivery via Fonnte (interim, pending Meta Business API approval)
 - Single-tenant (hardcode tenant for first PO Bus partner)
 - Owner + 1 admin + 2-3 drivers
 
@@ -621,3 +705,4 @@ The only meaningful cost is Claude API calls. Everything else fits comfortably i
 4. Weekly financial summary
 5. Maintenance tracking + alerts
 6. Analytics dashboard (utilization, revenue)
+7. Migration from Fonnte to Meta WhatsApp Business API

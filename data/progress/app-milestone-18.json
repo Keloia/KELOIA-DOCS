@@ -1,0 +1,9 @@
+{
+  "id": "app-milestone-18",
+  "phase": 18,
+  "title": "Notification UX",
+  "status": "done",
+  "tasksTotal": 5,
+  "tasksCompleted": 5,
+  "notes": "Auto-dismiss info alerts (8s), dismiss-all endpoint (core-domain + BFF), /notifikasi page with active/dismissed sections, Bell nav in sidebar/mobile with badge count, \"Lihat semua\" banner link, DialogTrigger asChild fix. 361 tests passing. PR #15 merged."
+}

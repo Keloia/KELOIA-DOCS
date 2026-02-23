@@ -1,0 +1,9 @@
+{
+  "id": "app-milestone-17",
+  "phase": 17,
+  "title": "CSV Data Export",
+  "status": "done",
+  "tasksTotal": 3,
+  "tasksCompleted": 3,
+  "notes": "CSV data export for schedule, financials, and fleet. BOM-prefixed CSV with Indonesian headers, responsive export buttons (icon-only on mobile), RBAC enforcement. 17 tests. PR #14 merged."
+}

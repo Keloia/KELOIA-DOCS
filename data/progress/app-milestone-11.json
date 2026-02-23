@@ -2,8 +2,8 @@
   "id": "app-milestone-11",
   "phase": 11,
   "title": "PDF Trip Confirmations",
-  "status": "in-progress",
+  "status": "done",
   "tasksTotal": 4,
-  "tasksCompleted": 3,
-  "notes": "PDF generation (pdf-lib), R2 storage with caching, dashboard download button, WA document sharing (sendDocument + auto-send on confirm). 288 tests passing (up from 279). Pending: R2 bucket creation + public domain config for WA sharing."
+  "tasksCompleted": 4,
+  "notes": "PDF generation (pdf-lib), R2 storage with caching, dashboard download button, WA document sharing (sendDocument + auto-send on confirm). 288 tests passing. PR #8 merged."
 }

@@ -1,0 +1,7 @@
+{
+  "id": "task-018",
+  "title": "Data export (CSV) — schedule, financials, fleet",
+  "column": "Done",
+  "description": "Three CSV export endpoints in Dashboard BFF, download hooks and buttons in Dashboard UI. BOM-prefixed CSV with Indonesian headers, proper escaping, RBAC enforcement. 17 tests.",
+  "assignee": null
+}

@@ -1,7 +1,7 @@
 {
   "id": "app-task-010",
   "title": "Integration testing and first partner onboarding",
-  "column": "In Progress",
+  "column": "Done",
   "description": "End-to-end integration tests, single-tenant seed data, Cloudflare production config, Meta WhatsApp Business API setup, deploy all workers, smoke test with first partner, basic monitoring.",
   "assignee": null
 }

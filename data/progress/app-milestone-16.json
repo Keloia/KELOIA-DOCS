@@ -2,8 +2,8 @@
   "id": "app-milestone-16",
   "phase": 16,
   "title": "Analytics Dashboard",
-  "status": "not-started",
+  "status": "done",
   "tasksTotal": 4,
-  "tasksCompleted": 0,
-  "notes": "Utilization, revenue, client analytics, charts"
+  "tasksCompleted": 4,
+  "notes": "Analytics dashboard with 5 aggregate queries (bus utilization, monthly revenue, top clients, top routes, booking stats), Recharts visualizations (bar charts, pie chart), RBAC-aware data redaction for admin, 300s KV cache, period selector. 8 new tests, 338 total passing. PR #13 merged."
 }

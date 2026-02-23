@@ -2,8 +2,8 @@
   "id": "app-milestone-12",
   "phase": 12,
   "title": "Multi-Tenant Onboarding",
-  "status": "in-progress",
+  "status": "done",
   "tasksTotal": 3,
   "tasksCompleted": 3,
-  "notes": "createTenant() service with invite code generation, onboarding state machine (KV-based), inbound handler integration. Owner + team member flows complete. 302 tests passing (up from 288)."
+  "notes": "createTenant() service with invite code generation, KV-based onboarding state machine, owner + team member WhatsApp flows. 302 tests passing. PR #9 merged."
 }

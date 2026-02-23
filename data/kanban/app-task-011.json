@@ -1,7 +1,7 @@
 {
   "id": "app-task-011",
   "title": "PDF trip confirmations",
-  "column": "Backlog",
+  "column": "In Progress",
   "description": "PDF generation in dashboard-bff, R2 storage with presigned URLs, dashboard download button, WhatsApp document sharing.",
   "assignee": null
 }

@@ -1,0 +1,7 @@
+{
+  "id": "task-020",
+  "title": "i18n framework — react-i18next setup with full Bahasa Indonesia coverage",
+  "column": "Done",
+  "description": "Set up react-i18next with static JSON resources (id + en locales). Extracted ~200 hardcoded Indonesian strings from 18 component/page files into locale JSON. API error messages use i18n.t() directly. Default language is Indonesian; English locale as developer reference. No language switcher yet — infrastructure supports i18n.changeLanguage(). PR #16 merged.",
+  "assignee": null
+}

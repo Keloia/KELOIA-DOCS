@@ -5,5 +5,5 @@
   "status": "done",
   "tasksTotal": 4,
   "tasksCompleted": 4,
-  "notes": "Analytics dashboard with 5 aggregate queries (bus utilization, monthly revenue, top clients, top routes, booking stats), Recharts visualizations (bar charts, pie chart), RBAC-aware data redaction for admin, 300s KV cache, period selector. 8 new tests, 338 total passing. PR #13 merged."
+  "notes": "Bus utilization analytics, monthly revenue trends, top clients/routes, booking stats with Recharts charts. RBAC masking for admins, 5-min KV cache, 8 tests. PR #13 merged."
 }

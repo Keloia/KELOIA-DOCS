@@ -1,7 +1,7 @@
 {
   "id": "app-task-016",
   "title": "Analytics dashboard",
-  "column": "Backlog",
+  "column": "Done",
   "description": "Bus utilization analytics, revenue trends, client payment patterns, charting integration (Recharts).",
   "assignee": null
 }

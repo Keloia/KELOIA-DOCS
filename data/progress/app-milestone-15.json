@@ -2,8 +2,8 @@
   "id": "app-milestone-15",
   "phase": 15,
   "title": "Maintenance Tracking",
-  "status": "not-started",
+  "status": "done",
   "tasksTotal": 3,
-  "tasksCompleted": 0,
-  "notes": "Maintenance-due evaluation, permit alerts, fleet health view"
+  "tasksCompleted": 3,
+  "notes": "Maintenance evaluation service (daily cron), permit expiring alerts, fleet health dashboard, dedup logic, WA notifications for high-severity items. 16 new tests, 130 core-domain tests passing. PR #12 merged."
 }

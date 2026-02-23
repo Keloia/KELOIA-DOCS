@@ -2,8 +2,8 @@
   "id": "app-milestone-13",
   "phase": 13,
   "title": "Morning Briefings",
-  "status": "not-started",
+  "status": "done",
   "tasksTotal": 3,
-  "tasksCompleted": 0,
-  "notes": "Cron trigger, role-specific briefings, opt-out"
+  "tasksCompleted": 3,
+  "notes": "Cron trigger (22:00 UTC = 05:00 WIB), role-specific briefings (driver/admin/owner), opt-out via core-domain routes + dashboard BFF. 9 briefing tests + 311 total tests passing."
 }

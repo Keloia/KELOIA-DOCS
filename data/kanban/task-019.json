@@ -1,0 +1,7 @@
+{
+  "id": "task-019",
+  "title": "Notification UX improvements — auto-dismiss, notifications page, dismiss-all",
+  "column": "Done",
+  "description": "Auto-dismiss info alerts after 8s, dismiss-all endpoint (core-domain + BFF), /notifikasi page with active/dismissed sections, Bell nav in sidebar/mobile with badge, \"Lihat semua\" banner link, DialogTrigger asChild fix. PR #15 merged.",
+  "assignee": null
+}

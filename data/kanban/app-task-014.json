@@ -1,7 +1,7 @@
 {
   "id": "app-task-014",
   "title": "Weekly financial summary",
-  "column": "In Progress",
+  "column": "Done",
   "description": "Weekly cron trigger, financial summary formatter (income, receivables, trends), period breakdown charts on dashboard.",
   "assignee": null
 }

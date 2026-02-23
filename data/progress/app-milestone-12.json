@@ -5,5 +5,5 @@
   "status": "done",
   "tasksTotal": 3,
   "tasksCompleted": 3,
-  "notes": "createTenant() service with invite code generation, KV-based onboarding state machine, owner + team member WhatsApp flows. 302 tests passing. PR #9 merged."
+  "notes": "WhatsApp onboarding flow, tenant creation, invite codes. Complete — merged via feat/multi-tenant-onboarding branch."
 }

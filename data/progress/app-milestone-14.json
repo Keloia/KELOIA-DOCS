@@ -2,8 +2,8 @@
   "id": "app-milestone-14",
   "phase": 14,
   "title": "Weekly Financial Summary",
-  "status": "in-progress",
+  "status": "done",
   "tasksTotal": 3,
-  "tasksCompleted": 0,
-  "notes": "Weekly cron, summary formatter, period breakdown"
+  "tasksCompleted": 3,
+  "notes": "Weekly cron (30 22 * * 0 = Monday 05:30 WIB), role-specific WA summaries (admin/owner, drivers excluded), dashboard weekly breakdown table with trend %. 9 new tests, 320 total passing. PR #11 merged."
 }

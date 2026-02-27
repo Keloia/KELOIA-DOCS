@@ -72,6 +72,11 @@
       "slug": "keloia-docs/tech-stack",
       "title": "Tech Stack Decisions",
       "project": "keloia-docs"
+    },
+    {
+      "slug": "keloia-docs/mcp-authentication",
+      "title": "MCP Worker Authentication",
+      "project": "keloia-docs"
     }
   ]
 }

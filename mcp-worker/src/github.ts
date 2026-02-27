@@ -10,7 +10,20 @@ export interface Env {
   GITHUB_REPO: string;
   GITHUB_BRANCH: string;
   GITHUB_TOKEN?: string;
+  // OAuth bindings
+  GITHUB_CLIENT_ID: string;
+  GITHUB_CLIENT_SECRET: string;
+  COOKIE_ENCRYPTION_KEY: string;
+  OAUTH_KV: KVNamespace;
 }
+
+/** User identity from the GitHub OAuth flow, stored in the MCP auth token. */
+export type Props = {
+  login: string;
+  name: string;
+  email: string;
+  accessToken: string;
+};
 
 /** Fetch raw file content from the repo. Returns null if file not found. */
 export async function readFile(env: Env, path: string): Promise<string | null> {

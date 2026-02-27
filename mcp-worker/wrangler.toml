@@ -16,3 +16,9 @@ class_name = "KeloiaMCP"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["KeloiaMCP"]
+
+# OAuth KV namespace — create via: npx wrangler kv namespace create OAUTH_KV
+# Then replace the id below with the returned ID
+[[kv_namespaces]]
+binding = "OAUTH_KV"
+id = "<REPLACE_WITH_KV_NAMESPACE_ID>"
